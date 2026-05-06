@@ -389,10 +389,11 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
 
     if (peakrack_turnstile_is_enabled('enable_pwreset')) {
         peakrack_turnstile_add_placement($placements, 'enable_pwreset', 'custom_pwreset_sel', [
-            'input[type="hidden"][name="action"][value="reset"]',
-            'form[action*="pwreset"] input[name="email"]',
-            'form[action*="password-reset"] input[name="email"]',
-            'form[action*="password%2freset"] input[name="email"]',
+            'form:has(input[type="hidden"][name="action"][value="reset"]) button[type="submit"]',
+            'form:has(input[type="hidden"][name="action"][value="reset"]) input[type="submit"]',
+            'form[action*="pwreset"] button[type="submit"], form[action*="pwreset"] input[type="submit"]',
+            'form[action*="password-reset"] button[type="submit"], form[action*="password-reset"] input[type="submit"]',
+            'form[action*="password%2freset"] button[type="submit"], form[action*="password%2freset"] input[type="submit"]',
         ], [
             'input[type="hidden"][name="action"][value="reset"]',
             'form[action*="password-reset-validate-email"]',

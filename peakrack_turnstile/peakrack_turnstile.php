@@ -15,7 +15,7 @@ function peakrack_turnstile_config()
         'description' => '使用 Cloudflare Turnstile 替换 WHMCS 默认验证码，并可在下方管理启用页面与选择器。',
         'author' => 'PeakRack',
         'language' => 'english',
-        'version' => '1.2.9',
+        'version' => '1.3.0',
         'fields' => [
             'site_key' => ['FriendlyName' => '站点密钥', 'Type' => 'text', 'Size' => '50', 'Description' => 'Cloudflare Turnstile 的 Site Key，用于在前台页面渲染验证码。'],
             'secret_key' => ['FriendlyName' => '私钥', 'Type' => 'password', 'Size' => '50', 'Description' => 'Cloudflare Turnstile 的 Secret Key，仅用于服务端向 Cloudflare 校验用户提交的 token。'],

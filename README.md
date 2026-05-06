@@ -1,5 +1,4 @@
 # PeakRack Turnstile WHMCS 模块
-Cloudflare Turnstile integration for WHMCS — a free, open-source, privacy-friendly alternative to Google reCAPTCHA.
 
 ## Features
 
