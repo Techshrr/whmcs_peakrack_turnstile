@@ -51,6 +51,12 @@ function peakrack_turnstile_get_theme()
     return in_array($theme, ['auto', 'light', 'dark'], true) ? $theme : 'auto';
 }
 
+function peakrack_turnstile_get_alignment()
+{
+    $alignment = peakrack_turnstile_get_setting('alignment');
+    return in_array($alignment, ['center', 'left'], true) ? $alignment : 'center';
+}
+
 function peakrack_turnstile_lang_root()
 {
     if (defined('ROOTDIR') && is_string(ROOTDIR) && ROOTDIR !== '') {
@@ -231,12 +237,7 @@ function peakrack_turnstile_verify($response)
 
 function peakrack_turnstile_widget_html()
 {
-    $siteKey = peakrack_turnstile_get_site_key();
-    if ($siteKey === '') {
-        return '';
-    }
-
-    return '<div class="peakrack-turnstile" data-sitekey="' . htmlspecialchars($siteKey, ENT_QUOTES, 'UTF-8') . '" data-theme="' . htmlspecialchars(peakrack_turnstile_get_theme(), ENT_QUOTES, 'UTF-8') . '"></div>';
+    return '<div class="peakrack-turnstile-native-slot" data-peakrack-native-slot="1"></div>';
 }
 
 function peakrack_turnstile_post_token()
@@ -339,8 +340,13 @@ function peakrack_turnstile_add_placement(&$placements, $enabledSetting, $custom
     }
 
     $custom = trim((string) peakrack_turnstile_get_setting($customSetting));
+    $targetList = $targets;
+    if ($custom !== '') {
+        array_unshift($targetList, $custom);
+    }
+
     $placements[] = [
-        'targets' => $custom !== '' ? [$custom] : $targets,
+        'targets' => $targetList,
         'forms' => $forms,
         'purpose' => $purpose,
     ];
@@ -359,66 +365,79 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
 
     if ($templatefile === 'login') {
         peakrack_turnstile_add_placement($placements, 'enable_login', 'custom_login_sel', [
-            '.peakrack-login-wrap form button[type="submit"]',
             'form.login-form button[type="submit"], form.login-form input[type="submit"]',
+            '#login',
             'form[action*="dologin"] button[type="submit"], form[action*="dologin"] input[type="submit"]',
             'form[action*="login/validate"] button[type="submit"], form[action*="login/validate"] input[type="submit"]',
             'form[action*="login%2fvalidate"] button[type="submit"], form[action*="login%2fvalidate"] input[type="submit"]',
+            '.peakrack-login-wrap form button[type="submit"]',
         ], [
             'form.login-form',
-            '.peakrack-login-wrap form',
             'form[action*="dologin"]',
             'form[action*="login/validate"]',
             'form[action*="login%2fvalidate"]',
-        ]);
+            '.peakrack-login-wrap form',
+        ], 'login');
     }
 
     if ($templatefile === 'clientregister') {
         peakrack_turnstile_add_placement($placements, 'enable_register', 'custom_register_sel', [
-            '.peakrack-register-wrap form button[type="submit"]',
-            '#btnRegister',
-            'form:has(input[name="register"][value="true"]) button[type="submit"], form:has(input[name="register"][value="true"]) input[type="submit"]',
             'form#frmCheckout button[type="submit"], form#frmCheckout input[type="submit"]',
+            'form:has(input[name="register"][value="true"]) button[type="submit"], form:has(input[name="register"][value="true"]) input[type="submit"]',
+            '#btnRegister',
+            '.peakrack-register-wrap form button[type="submit"]',
         ], [
-            '.peakrack-register-wrap form',
-            'form[action*="register"]',
-            'form:has(input[name="register"][value="true"])',
             'form#frmCheckout',
-        ]);
+            'form:has(input[name="register"][value="true"])',
+            'form[action*="register"]',
+            '.peakrack-register-wrap form',
+        ], 'register');
     }
 
     if (peakrack_turnstile_is_enabled('enable_pwreset')) {
         peakrack_turnstile_add_placement($placements, 'enable_pwreset', 'custom_pwreset_sel', [
             'form:has(input[type="hidden"][name="action"][value="reset"]) button[type="submit"]',
             'form:has(input[type="hidden"][name="action"][value="reset"]) input[type="submit"]',
+            '#resetPasswordButton',
             'form[action*="pwreset"] button[type="submit"], form[action*="pwreset"] input[type="submit"]',
             'form[action*="password-reset"] button[type="submit"], form[action*="password-reset"] input[type="submit"]',
+            'form[action*="password/reset"] button[type="submit"], form[action*="password/reset"] input[type="submit"]',
+            'form[action*="validate-email"] button[type="submit"], form[action*="validate-email"] input[type="submit"]',
             'form[action*="password%2freset"] button[type="submit"], form[action*="password%2freset"] input[type="submit"]',
         ], [
             'input[type="hidden"][name="action"][value="reset"]',
             'form[action*="password-reset-validate-email"]',
+            'form[action*="password/reset"]',
+            'form[action*="validate-email"]',
             'form[action*="password%2freset%2fvalidate-email"]',
             'form[action*="pwreset"]',
-        ]);
+        ], 'pwreset');
     }
 
     if ($templatefile === 'supportticketsubmit-stepone' || $templatefile === 'supportticketsubmit-steptwo') {
         peakrack_turnstile_add_placement($placements, 'enable_ticket', 'custom_ticket_sel', [
             '#openTicketSubmit',
+            'form[action*="submitticket"] button[type="submit"], form[action*="submitticket"] input[type="submit"]',
+            'form:has(#openTicketSubmit) button[type="submit"], form:has(#openTicketSubmit) input[type="submit"]',
         ], [
+            'form:has(#openTicketSubmit)',
             'form[action*="submitticket"]',
             'form',
-        ]);
+        ], 'ticket');
     }
 
     if ($templatefile === 'contact') {
         peakrack_turnstile_add_placement($placements, 'enable_contact', 'custom_contact_sel', [
-            '.peakrack-contact-form-wrap form button[type="submit"]',
+            'form:has(input[name="action"][value="send"]) button[type="submit"], form:has(input[name="action"][value="send"]) input[type="submit"]',
+            'form[action*="contact.php"] button[type="submit"], form[action*="contact.php"] input[type="submit"]',
             'form[action*="contact"] button[type="submit"], form[action*="contact"] input[type="submit"]',
+            '.peakrack-contact-form-wrap form button[type="submit"]',
         ], [
+            'form:has(input[name="action"][value="send"])',
             'form[action*="contact.php"]',
+            'form[action*="contact"]',
             '.peakrack-contact-form-wrap form',
-        ]);
+        ], 'contact');
     }
 
     if (strpos($templatefile, 'checkout') !== false || $filename === 'cart') {
@@ -434,6 +453,9 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
 
         peakrack_turnstile_add_placement($placements, 'enable_cart', 'custom_cart_sel', [
             '#btnCompleteOrder',
+            '#checkout',
+            '#submit-checkout',
+            '#frmCheckout button[type="submit"], #frmCheckout input[type="submit"]',
         ], [
             '#frmCheckout',
             'form[action*="cart"]',
@@ -443,6 +465,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
     $config = [
         'siteKey' => $siteKey,
         'theme' => peakrack_turnstile_get_theme(),
+        'alignment' => peakrack_turnstile_get_alignment(),
         'placements' => $placements,
         'checkoutLogin' => $checkoutLogin,
         'messages' => [
@@ -453,10 +476,67 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
 
     $configJson = json_encode($config, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
 
+    $alignment = peakrack_turnstile_get_alignment();
+    $alignmentCss = $alignment === 'left' ? '
+        .peakrack-turnstile {
+            margin-left: 0 !important;
+            margin-right: auto !important;
+        }
+        .peakrack-turnstile-row,
+        .peakrack-turnstile-row[data-peakrack-row-purpose="login"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="register"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="pwreset"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="contact"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="ticket"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-login"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-order"],
+        .summary-actions .peakrack-turnstile-row,
+        .main-sidebar .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-order"],
+        .order-summary-mob .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-order"] {
+            margin-left: 0 !important;
+            margin-right: auto !important;
+            text-align: left !important;
+            justify-self: start;
+        }
+        .peakrack-turnstile-preserved-actions {
+            margin-left: 0 !important;
+            margin-right: auto !important;
+            text-align: left !important;
+        }
+    ' : '
+        .peakrack-turnstile {
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        .peakrack-turnstile-row,
+        .peakrack-turnstile-row[data-peakrack-row-purpose="login"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="register"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="pwreset"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="contact"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="ticket"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-login"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-order"],
+        .summary-actions .peakrack-turnstile-row,
+        .main-sidebar .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-order"],
+        .order-summary-mob .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-order"] {
+            margin-left: auto !important;
+            margin-right: auto !important;
+            text-align: center !important;
+            justify-self: center;
+        }
+        .peakrack-turnstile-preserved-actions {
+            margin-left: auto !important;
+            margin-right: auto !important;
+            text-align: center !important;
+        }
+    ';
+
     $css = '<style>
         .g-recaptcha,
         #google-recaptcha-domainchecker,
         .recaptcha-container,
+        .cf-turnstile:not(.peakrack-turnstile),
+        .h-captcha,
         #default-captcha-domainchecker,
         .default-captcha,
         #captchaContainer,
@@ -465,10 +545,70 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             display: none !important;
         }
         .peakrack-turnstile {
+            box-sizing: border-box;
             display: block !important;
-            margin: 15px 0;
+            margin: 0 auto !important;
+            width: 100%;
+            max-width: 320px;
             min-height: 65px;
+            line-height: normal;
         }
+        .peakrack-turnstile-row {
+            box-sizing: border-box;
+            clear: both;
+            display: block !important;
+            float: none !important;
+            width: 100%;
+            max-width: 320px;
+            min-height: 65px;
+            margin: 14px auto !important;
+            text-align: center;
+            flex: 0 1 320px;
+            grid-column: 1 / -1;
+            justify-self: center;
+            align-self: center;
+        }
+        .peakrack-turnstile-row[data-peakrack-row-purpose="login"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="register"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="pwreset"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="contact"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="ticket"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-login"],
+        .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-order"] {
+            max-width: 320px;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        .summary-actions .peakrack-turnstile-row,
+        .main-sidebar .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-order"] {
+            margin-top: 14px !important;
+            margin-bottom: 14px !important;
+        }
+        .order-summary-mob .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-order"] {
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+        .inline-form + .peakrack-turnstile-row[data-peakrack-row-purpose="checkout-login"] {
+            margin-top: 12px !important;
+        }
+        .peakrack-turnstile iframe {
+            max-width: 100%;
+        }
+        .peakrack-turnstile-native-slot {
+            display: none !important;
+        }
+        .peakrack-turnstile-preserved-actions {
+            display: block !important;
+            width: 100%;
+            margin: 0 auto 14px !important;
+            text-align: center !important;
+        }
+        .peakrack-turnstile-preserved-actions .btn,
+        .peakrack-turnstile-preserved-actions button,
+        .peakrack-turnstile-preserved-actions input[type="submit"] {
+            float: none !important;
+        }
+    ' . $alignmentCss . '
     </style>';
 
     $script = <<<'HTML'
@@ -478,6 +618,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
 
     var config = __MEGABRE_TURNSTILE_CONFIG__;
     var renderAttempts = 0;
+    var checkoutRelocationAttempts = 0;
 
     if (!$) {
         window.console && console.warn && console.warn('Cloudflare Turnstile: jQuery is required for WHMCS form injection.');
@@ -499,7 +640,9 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
         var attributes = {
             'class': 'peakrack-turnstile',
             'data-sitekey': config.siteKey,
-            'data-theme': config.theme
+            'data-theme': config.theme,
+            'data-size': 'normal',
+            'data-peakrack-managed': '1'
         };
 
         if (purpose) {
@@ -507,6 +650,77 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
         }
 
         return $('<div/>', attributes);
+    }
+
+    function nativeCaptchaBlock($form) {
+        var $scope = $form && $form.length ? $form : $(document);
+        var $slot = $scope.find(
+            '.peakrack-turnstile-native-slot,' +
+            '#captchaContainer,' +
+            '.recaptcha-container,' +
+            '#google-recaptcha-domainchecker,' +
+            '#default-captcha-domainchecker'
+        ).first();
+        var $block;
+
+        if (!$slot.length) {
+            return $();
+        }
+
+        $block = $slot.closest(
+            '.peakrack-turnstile-native-slot,' +
+            '#captchaContainer,' +
+            '.captcha,' +
+            '.login-captcha,' +
+            '.recaptcha-container,' +
+            '.domainchecker-homepage-captcha,' +
+            '.domain-search-captcha,' +
+            '.row.justify-content-center,' +
+            '.text-center.row,' +
+            '.form-group'
+        ).first();
+
+        if ($block.length && !$block.is('form')) {
+            return $block;
+        }
+
+        return $slot;
+    }
+
+    function replaceNativeCaptchaBlock($form, $row) {
+        var $block = nativeCaptchaBlock($form);
+        var $submitControls;
+        var $preservedActions;
+
+        if (!$block.length) {
+            return false;
+        }
+
+        $submitControls = $block.find('button[type="submit"], input[type="submit"]').detach();
+        $block.replaceWith($row);
+
+        if ($submitControls.length) {
+            $preservedActions = $('<div/>', {
+                'class': 'form-actions text-center peakrack-turnstile-preserved-actions'
+            }).append($submitControls);
+            $row.after($preservedActions);
+        }
+
+        return true;
+    }
+
+    function widgetRow($widget, purpose) {
+        var rowPurpose = purpose || $widget.attr('data-peakrack-purpose') || '';
+        var $row = $widget.closest('.peakrack-turnstile-row');
+
+        if ($row.length) {
+            return $row.detach();
+        }
+
+        return $('<div/>', {
+            'class': 'peakrack-turnstile-row',
+            'data-peakrack-row-purpose': rowPurpose
+        }).append($widget.detach());
     }
 
     function targetForm($target) {
@@ -525,6 +739,460 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
         return $();
     }
 
+    function findLoginForm($target) {
+        var $form = targetForm($target);
+
+        if ($form.length && ($form.hasClass('login-form') || $form.find('input[name="username"], input[name="password"]').length)) {
+            return $form;
+        }
+
+        return firstVisible($(
+            'form.login-form,' +
+            '.peakrack-login-wrap form,' +
+            'form[action*="dologin"],' +
+            'form[action*="login/validate"],' +
+            'form[action*="login%2fvalidate"]'
+        ));
+    }
+
+    function findPasswordResetForm($target) {
+        var $form = targetForm($target);
+
+        if ($form.length && $form.find('input[type="hidden"][name="action"][value="reset"], input[name="email"]').length) {
+            return $form;
+        }
+
+        return firstVisible($(
+            'form:has(input[type="hidden"][name="action"][value="reset"]),' +
+            'form[action*="password-reset-validate-email"],' +
+            'form[action*="password/reset"],' +
+            'form[action*="validate-email"],' +
+            'form[action*="password%2freset%2fvalidate-email"],' +
+            'form[action*="pwreset"]'
+        ));
+    }
+
+    function hasPlacementPurpose(purpose) {
+        var found = false;
+
+        $.each(config.placements || [], function (_, placement) {
+            if ((placement.purpose || '') === purpose) {
+                found = true;
+                return false;
+            }
+        });
+
+        return found;
+    }
+
+    function visibleItems($items) {
+        return $items.filter(function () {
+            var $item = $(this);
+            return $item.is(':visible') && !$item.hasClass('hidden') && !$item.hasClass('d-none') && $item.css('display') !== 'none';
+        });
+    }
+
+    function firstVisible($items) {
+        return visibleItems($items).first();
+    }
+
+    function lastVisible($items) {
+        return visibleItems($items).last();
+    }
+
+    function formTermsBlock($form) {
+        var $scope = $form && $form.length ? $form : $(document);
+        var $virtual = firstVisible($scope.find('.order-checkbox[data-form-input="#accepttos"], .order-checkbox:has([data-tos-checkbox])'));
+        var $input = firstVisible($scope.find('#accepttos, input[name="accepttos"], input.accepttos')).first();
+        var $label;
+        var $block;
+
+        if ($virtual.length) {
+            return $virtual;
+        }
+
+        if (!$input.length) {
+            return $();
+        }
+
+        $label = $input.closest('label');
+        $block = $label.closest('p, .form-check, .custom-control, .checkbox, .form-group, .mb-3').first();
+
+        if ($block.length) {
+            return $block;
+        }
+
+        if ($label.length) {
+            var $parent = $label.parent('div');
+            return $parent.length && !$parent.is('form, #frmCheckout') ? $parent : $label;
+        }
+
+        $block = $input.closest('p, .form-check, .custom-control, .checkbox, .form-group, .mb-3').first();
+        return $block.length ? $block : $input;
+    }
+
+    function checkoutTermsBlock() {
+        var $virtual = firstVisible($('.main-sidebar .order-checkbox[data-form-input="#accepttos"], #orderSummary .order-checkbox[data-form-input="#accepttos"], .summary-actions .order-checkbox[data-form-input="#accepttos"], .order-checkbox[data-form-input="#accepttos"]'));
+
+        if ($virtual.length) {
+            return $virtual;
+        }
+
+        return formTermsBlock($('#frmCheckout'));
+    }
+
+    function actionBlock($target) {
+        var $row = $target.closest('.row').first();
+        var $block = $target.closest('p, .text-center, .form-actions, .actions, .summary-actions, .form-group, .btn-group-wrap, .button-row').first();
+
+        if ($row.length && $row.find('input[type="text"], input[type="email"], input[type="password"], select, textarea').length) {
+            return $row;
+        }
+
+        if ($block.length && !$block.is('form, #frmCheckout')) {
+            return $block;
+        }
+
+        return $target;
+    }
+
+    function submitBlock($form) {
+        var $submit;
+        var $block;
+
+        if (!$form || !$form.length) {
+            return $();
+        }
+
+        $submit = lastVisible($form.find(
+            '#btnCompleteOrder:not(.hidden),' +
+            '#resetPasswordButton:not(.hidden),' +
+            '#login:not(.hidden),' +
+            '#btnSubmit:not(.hidden),' +
+            '#btnRegister:not(.hidden),' +
+            'button[type="submit"]:not(.hidden),' +
+            'input[type="submit"]:not(.hidden)'
+        ));
+
+        if (!$submit.length) {
+            return $();
+        }
+
+        $block = $submit.closest('p, .float-left, .text-center, .form-actions, .actions, .summary-actions, .form-group, .btn-group-wrap, .button-row').first();
+        return $block.length && !$block.is('form, #frmCheckout') ? $block : $submit;
+    }
+
+    function checkoutOrderAnchor($fallback) {
+        var selectors = [
+            '.main-sidebar #orderSummary .summary-actions button.btn-checkout',
+            '.sidebar-sticky-summary button.btn-checkout',
+            '#orderSummary .summary-actions button.btn-checkout',
+            '#checkout',
+            '#orderSummary button[type="submit"]',
+            '#orderSummary .btn-primary',
+            '#orderSummary .btn-success',
+            '#btnCompleteOrder:not(.hidden)',
+            '#frmCheckout button[type="submit"]:not(.hidden)',
+            '#frmCheckout input[type="submit"]:not(.hidden)'
+        ];
+
+        for (var i = 0; i < selectors.length; i++) {
+            var $candidate = firstVisible(bySelector(selectors[i]));
+            if ($candidate.length) {
+                return $candidate;
+            }
+        }
+
+        return $fallback && $fallback.length ? $fallback : $();
+    }
+
+    function placeCheckoutOrderWidget($widget, $fallback) {
+        var $existingRow = $widget.closest('.peakrack-turnstile-row');
+        var $form = $('#frmCheckout');
+        var $terms;
+        var $row;
+        var $anchor;
+        var $submit;
+
+        if (
+            $widget.attr('data-peakrack-rendered') === '1'
+            && $existingRow.closest('body').length
+            && $existingRow.closest('#frmCheckout, #orderSummary, .summary-actions, .main-sidebar').length
+        ) {
+            return true;
+        }
+
+        $terms = checkoutTermsBlock();
+        $row = widgetRow($widget, 'checkout-order');
+
+        if ($terms.length) {
+            $terms.after($row);
+            return true;
+        }
+
+        $submit = submitBlock($form);
+        if ($submit.length) {
+            $submit.before($row);
+            return true;
+        }
+
+        $anchor = checkoutOrderAnchor($fallback);
+        if ($anchor.length) {
+            actionBlock($anchor).before($row);
+            return true;
+        }
+
+        if ($form.length) {
+            $form.append($row);
+            return true;
+        }
+
+        return false;
+    }
+
+    function placeCheckoutLoginWidget($target, $widget) {
+        var $row = widgetRow($widget, 'checkout-login');
+        var $form = targetForm($target);
+        var $inlineForm = $target.closest('.inline-form').first();
+        var $block = actionBlock($target);
+        var $loginActions;
+
+        if (replaceNativeCaptchaBlock($form, $row)) {
+            return true;
+        }
+
+        if ($inlineForm.length) {
+            $inlineForm.after($row);
+            return true;
+        }
+
+        $loginActions = $form.find('#login, button[type="submit"], input[type="submit"]').last().closest('.float-left, .form-actions, p, .form-group').first();
+        if ($loginActions.length) {
+            $loginActions.before($row);
+            return true;
+        }
+
+        if ($block.length && $block.find('input[type="text"], input[type="email"], input[type="password"]').length) {
+            $block.after($row);
+            return true;
+        }
+
+        if ($block.length) {
+            $block.before($row);
+            return true;
+        }
+
+        return false;
+    }
+
+    function placeRegisterWidget($target, $widget) {
+        var $form = targetForm($target);
+        var $terms = formTermsBlock($form);
+        var $row = widgetRow($widget, 'register');
+        var $block;
+        var $submitBlock;
+
+        if (replaceNativeCaptchaBlock($form, $row)) {
+            return true;
+        }
+
+        if ($terms.length) {
+            $terms.after($row);
+            return true;
+        }
+
+        $submitBlock = $form.find('#btnRegister, button[type="submit"], input[type="submit"]').last().closest('p, .form-actions, .form-group, .text-center').first();
+        if ($submitBlock.length) {
+            $submitBlock.before($row);
+            return true;
+        }
+
+        $block = actionBlock($target);
+        if ($block.length) {
+            $block.before($row);
+            return true;
+        }
+
+        return false;
+    }
+
+    function placeLoginWidget($target, $widget) {
+        var $form = findLoginForm($target);
+        var $row = widgetRow($widget, 'login');
+        var $submitBlock;
+        var $passwordBlock;
+        var $block;
+
+        if (!$form.length) {
+            return false;
+        }
+
+        if (replaceNativeCaptchaBlock($form, $row)) {
+            return true;
+        }
+
+        $submitBlock = submitBlock($form);
+        if ($submitBlock.length) {
+            $submitBlock.before($row);
+            return true;
+        }
+
+        $passwordBlock = $form.find('input[type="password"]').last().closest('.form-group, .mb-4, .row').first();
+        if ($passwordBlock.length) {
+            $passwordBlock.after($row);
+            return true;
+        }
+
+        $block = actionBlock($target);
+        if ($block.length && $block.closest($form).length) {
+            $block.before($row);
+            return true;
+        }
+
+        return false;
+    }
+
+    function placePasswordResetWidget($target, $widget) {
+        var $form = findPasswordResetForm($target);
+        var $row = widgetRow($widget, 'pwreset');
+        var $submitBlock;
+        var $emailBlock;
+        var $block;
+
+        if (!$form.length) {
+            return false;
+        }
+
+        if (replaceNativeCaptchaBlock($form, $row)) {
+            return true;
+        }
+
+        $submitBlock = submitBlock($form);
+        if ($submitBlock.length) {
+            $submitBlock.before($row);
+            return true;
+        }
+
+        $emailBlock = $form.find('input[type="email"], input[name="email"]').last().closest('.form-group, .row').first();
+        if ($emailBlock.length) {
+            $emailBlock.after($row);
+            return true;
+        }
+
+        $block = actionBlock($target);
+        if ($block.length && $block.closest($form).length) {
+            $block.before($row);
+            return true;
+        }
+
+        return false;
+    }
+
+    function placeFormSubmitWidget($target, $widget, purpose) {
+        var $form = targetForm($target);
+        var $row = widgetRow($widget, purpose);
+        var $submitBlock;
+        var $block;
+
+        if (!$form.length) {
+            return false;
+        }
+
+        if (replaceNativeCaptchaBlock($form, $row)) {
+            return true;
+        }
+
+        $submitBlock = submitBlock($form);
+        if ($submitBlock.length) {
+            $submitBlock.before($row);
+            return true;
+        }
+
+        $block = actionBlock($target);
+        if ($block.length && $block.closest($form).length) {
+            $block.before($row);
+            return true;
+        }
+
+        return false;
+    }
+
+    function insertWidgetNearTarget($target, $widget, purpose) {
+        if (purpose === 'checkout-order' && placeCheckoutOrderWidget($widget, $target)) {
+            return;
+        }
+
+        if (purpose === 'checkout-login' && placeCheckoutLoginWidget($target, $widget)) {
+            return;
+        }
+
+        if (purpose === 'register' && placeRegisterWidget($target, $widget)) {
+            return;
+        }
+
+        if (purpose === 'login' && placeLoginWidget($target, $widget)) {
+            return;
+        }
+
+        if (purpose === 'pwreset' && placePasswordResetWidget($target, $widget)) {
+            return;
+        }
+
+        if ((purpose === 'contact' || purpose === 'ticket') && placeFormSubmitWidget($target, $widget, purpose)) {
+            return;
+        }
+
+        actionBlock($target).before(widgetRow($widget, purpose));
+    }
+
+    function ensureCheckoutOrderWidget() {
+        if (!hasPlacementPurpose('checkout-order')) {
+            return;
+        }
+
+        if ($('.peakrack-turnstile[data-peakrack-purpose="checkout-order"][data-peakrack-rendered="1"]').length) {
+            return;
+        }
+
+        var $form = $('#frmCheckout');
+        if (!$form.length) {
+            return;
+        }
+
+        var $widget = $('.peakrack-turnstile[data-peakrack-purpose="checkout-order"]').first();
+
+        if (!$widget.length) {
+            $widget = createWidget('checkout-order');
+        }
+
+        placeCheckoutOrderWidget($widget, lastVisible($('#btnCompleteOrder')).length ? lastVisible($('#btnCompleteOrder')) : $form);
+        $form.attr('data-peakrack-turnstile-form', '1');
+    }
+
+    function relocateCheckoutOrderWidget() {
+        var $widget = $('.peakrack-turnstile[data-peakrack-purpose="checkout-order"]').first();
+
+        if (!$widget.length) {
+            ensureCheckoutOrderWidget();
+            return;
+        }
+
+        placeCheckoutOrderWidget($widget, lastVisible($('#btnCompleteOrder')));
+    }
+
+    function scheduleCheckoutOrderRelocation() {
+        if (!hasPlacementPurpose('checkout-order')) {
+            return;
+        }
+
+        relocateCheckoutOrderWidget();
+
+        if (checkoutRelocationAttempts < 30) {
+            checkoutRelocationAttempts++;
+            window.setTimeout(scheduleCheckoutOrderRelocation, 200);
+        }
+    }
+
     function insertWidgets() {
         $.each(config.placements || [], function (_, placement) {
             $.each(placement.targets || [], function (_, selector) {
@@ -532,12 +1200,16 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
                     var $target = $(this);
                     var $form = targetForm($target);
                     var $scope = $form.length ? $form : $target.closest('#containerExistingUserSignin');
+                    var purpose = placement.purpose || '';
+                    var hasExistingWidget = purpose
+                        ? $('.peakrack-turnstile[data-peakrack-purpose="' + purpose + '"]').length
+                        : $scope.find('.peakrack-turnstile').length;
 
-                    if (!$scope.length || $scope.find('.peakrack-turnstile').length) {
+                    if (!$scope.length || hasExistingWidget) {
                         return;
                     }
 
-                    $target.before(createWidget(placement.purpose || ''));
+                    insertWidgetNearTarget($target, createWidget(purpose), purpose);
                 });
             });
 
@@ -552,6 +1224,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             });
         });
 
+        ensureCheckoutOrderWidget();
         $('form').has('.peakrack-turnstile:not([data-peakrack-purpose="checkout-login"])').attr('data-peakrack-turnstile-form', '1');
     }
 
@@ -566,7 +1239,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             return;
         }
 
-        $('.peakrack-turnstile').each(function () {
+        $('.peakrack-turnstile[data-peakrack-managed="1"]').each(function () {
             var element = this;
 
             if (element.getAttribute('data-peakrack-rendered') === '1') {
@@ -578,6 +1251,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
                 var options = {
                     sitekey: config.siteKey,
                     theme: config.theme,
+                    size: 'normal',
                     action: purpose || 'form',
                     callback: function (token) {
                         element.setAttribute('data-peakrack-token', token || '');
@@ -643,7 +1317,36 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             }
         });
 
+        if (!token && $form.is('#frmCheckout')) {
+            $('.peakrack-turnstile[data-peakrack-purpose="checkout-order"]').each(function () {
+                hasScopedWidget = true;
+                token = $.trim(this.getAttribute('data-peakrack-token') || $(this).find('[name="cf-turnstile-response"]').val() || '');
+                if (token) {
+                    return false;
+                }
+            });
+        }
+
         return hasScopedWidget ? token : tokenFrom($form);
+    }
+
+    function syncSubmitToken($form) {
+        var token = tokenFromSubmitScope($form);
+        if (!token) {
+            return '';
+        }
+
+        var $field = $form.find('input[name="cf-turnstile-response"][data-peakrack-proxy="1"]').first();
+        if (!$field.length) {
+            $field = $('<input/>', {
+                type: 'hidden',
+                name: 'cf-turnstile-response',
+                'data-peakrack-proxy': '1'
+            }).appendTo($form);
+        }
+        $field.val(token);
+
+        return token;
     }
 
     function checkoutLoginToken() {
@@ -705,12 +1408,13 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
 
     $(function () {
         insertWidgets();
+        scheduleCheckoutOrderRelocation();
         renderWidgets();
         showCaptchaError();
         installCheckoutAjaxBridge();
 
         $(document).off('submit.peakrackTurnstile').on('submit.peakrackTurnstile', 'form[data-peakrack-turnstile-form="1"]', function (event) {
-            if (!tokenFromSubmitScope($(this))) {
+            if (!syncSubmitToken($(this))) {
                 event.preventDefault();
                 window.alert(config.messages.prompt);
                 return false;

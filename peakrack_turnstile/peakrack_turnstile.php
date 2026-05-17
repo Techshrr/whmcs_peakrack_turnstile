@@ -2,49 +2,143 @@
 
 use WHMCS\Database\Capsule;
 
-if (!defined("WHMCS")) {
-    die("This file cannot be accessed directly");
+if (!defined('WHMCS')) {
+    die('This file cannot be accessed directly');
 }
 
 function peakrack_turnstile_config()
 {
-    // Keeping fields here ensures WHMCS creates the rows in proper format for `tbladdonmodules`
-    // and allows fallback if someone uses the modal config. 
     return [
         'name' => 'PeakRack Turnstile 管理器',
-        'description' => '使用 Cloudflare Turnstile 替换 WHMCS 默认验证码，并可在下方管理启用页面与选择器。',
+        'description' => '使用 Cloudflare Turnstile 替换 WHMCS 默认验证码。优先适配 Nexus、Six、Twenty-One，再兼容 Lagom/Lagom2 等商业主题。',
         'author' => 'PeakRack',
         'language' => 'english',
-        'version' => '1.3.0',
+        'version' => '1.4.1',
         'fields' => [
-            'site_key' => ['FriendlyName' => '站点密钥', 'Type' => 'text', 'Size' => '50', 'Description' => 'Cloudflare Turnstile 的 Site Key，用于在前台页面渲染验证码。'],
-            'secret_key' => ['FriendlyName' => '私钥', 'Type' => 'password', 'Size' => '50', 'Description' => 'Cloudflare Turnstile 的 Secret Key，仅用于服务端向 Cloudflare 校验用户提交的 token。'],
-            'theme' => ['FriendlyName' => '主题', 'Type' => 'dropdown', 'Options' => 'auto,light,dark', 'Default' => 'auto', 'Description' => '控制前台 Turnstile 组件外观；自动会跟随访客浏览器或系统偏好。'],
-            'enable_login' => ['FriendlyName' => '登录页启用', 'Type' => 'yesno', 'Description' => '在客户登录页启用 Turnstile；结账页若已启用购物车验证，则不会额外显示登录验证码。'],
-            'enable_register' => ['FriendlyName' => '注册页启用', 'Type' => 'yesno', 'Description' => '在客户注册页提交前要求完成 Turnstile 验证。'],
-            'enable_pwreset' => ['FriendlyName' => '密码重置启用', 'Type' => 'yesno', 'Description' => '在找回密码/重置密码的邮箱提交步骤启用 Turnstile。'],
-            'enable_contact' => ['FriendlyName' => '联系我们启用', 'Type' => 'yesno', 'Description' => '在联系我们表单提交前启用 Turnstile，减少垃圾消息。'],
-            'enable_ticket' => ['FriendlyName' => '提交工单启用', 'Type' => 'yesno', 'Description' => '在未登录或客户提交新工单时启用 Turnstile。'],
-            'enable_cart' => ['FriendlyName' => '购物车/结账启用', 'Type' => 'yesno', 'Description' => '在购物车完成订单前启用 Turnstile；结账页只显示一个验证码。'],
-            'custom_login_sel' => ['FriendlyName' => '登录页选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。自定义登录页中插入 Turnstile 的目标元素选择器，留空使用自动识别。'],
-            'custom_register_sel' => ['FriendlyName' => '注册页选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。自定义注册页中插入 Turnstile 的目标元素选择器，通常填写提交按钮选择器。'],
-            'custom_pwreset_sel' => ['FriendlyName' => '密码重置选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。自定义密码重置页面中插入 Turnstile 的目标元素选择器。'],
-            'custom_contact_sel' => ['FriendlyName' => '联系我们选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。自定义联系我们页面中插入 Turnstile 的目标元素选择器。'],
-            'custom_ticket_sel' => ['FriendlyName' => '工单选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。自定义提交工单页面中插入 Turnstile 的目标元素选择器。'],
-            'custom_cart_sel' => ['FriendlyName' => '购物车/结账选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。自定义结账页中插入 Turnstile 的目标元素选择器，建议指向完成订单按钮附近。'],
-        ]
+            'site_key' => [
+                'FriendlyName' => 'Site Key / 站点密钥',
+                'Type' => 'text',
+                'Size' => '50',
+                'Description' => 'Cloudflare Turnstile Site Key，用于前台显示验证组件。',
+            ],
+            'secret_key' => [
+                'FriendlyName' => 'Secret Key / 私钥',
+                'Type' => 'password',
+                'Size' => '50',
+                'Description' => 'Cloudflare Turnstile Secret Key，仅用于服务端校验用户提交的 token。',
+            ],
+            'theme' => [
+                'FriendlyName' => 'Theme / 主题',
+                'Type' => 'dropdown',
+                'Options' => 'auto,light,dark',
+                'Default' => 'auto',
+                'Description' => 'Turnstile 外观主题。建议使用 auto。',
+            ],
+            'alignment' => [
+                'FriendlyName' => 'Alignment / 对齐方式',
+                'Type' => 'dropdown',
+                'Options' => 'center,left',
+                'Default' => 'center',
+                'Description' => 'Turnstile 小组件显示位置：居中或左对齐。默认居中。',
+            ],
+            'enable_login' => [
+                'FriendlyName' => '登录页启用',
+                'Type' => 'yesno',
+                'Description' => '客户登录页。支持 Nexus、Six、Twenty-One、Lagom/Lagom2。',
+            ],
+            'enable_register' => [
+                'FriendlyName' => '注册页启用',
+                'Type' => 'yesno',
+                'Description' => '客户注册页。启用 WHMCS 服务条款接受时会自动放在条款附近，关闭时放在提交按钮前。',
+            ],
+            'enable_pwreset' => [
+                'FriendlyName' => '密码重置启用',
+                'Type' => 'yesno',
+                'Description' => '找回密码/密码重置邮箱提交步骤。',
+            ],
+            'enable_contact' => [
+                'FriendlyName' => '联系我们启用',
+                'Type' => 'yesno',
+                'Description' => '联系我们表单提交前验证。',
+            ],
+            'enable_ticket' => [
+                'FriendlyName' => '提交工单启用',
+                'Type' => 'yesno',
+                'Description' => '提交新工单表单提交前验证。',
+            ],
+            'enable_cart' => [
+                'FriendlyName' => '购物车/结账启用',
+                'Type' => 'yesno',
+                'Description' => '购物车/结账完成订单前验证。结账页只显示一个 Turnstile。',
+            ],
+            'custom_login_sel' => ['FriendlyName' => '登录页自定义选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。只在自定义主题需要时填写；会作为附加 selector，不会覆盖默认适配。'],
+            'custom_register_sel' => ['FriendlyName' => '注册页自定义选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。建议指向提交按钮或提交按钮所在容器。'],
+            'custom_pwreset_sel' => ['FriendlyName' => '密码重置自定义选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。建议指向重置密码提交按钮。'],
+            'custom_contact_sel' => ['FriendlyName' => '联系我们自定义选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。建议指向联系表单提交按钮。'],
+            'custom_ticket_sel' => ['FriendlyName' => '提交工单自定义选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。建议指向 #openTicketSubmit。'],
+            'custom_cart_sel' => ['FriendlyName' => '购物车/结账自定义选择器', 'Type' => 'text', 'Size' => '50', 'Description' => '可选。建议指向完成订单按钮附近。'],
+        ],
     ];
 }
 
 function peakrack_turnstile_activate()
 {
     peakrack_turnstile_migrate_legacy_settings();
-    return ['status' => 'success', 'description' => 'PeakRack Turnstile 管理器已成功启用。'];
+    return ['status' => 'success', 'description' => 'PeakRack Turnstile 管理器已启用。'];
 }
 
 function peakrack_turnstile_deactivate()
 {
     return ['status' => 'success', 'description' => 'PeakRack Turnstile 管理器已停用。'];
+}
+
+function peakrack_turnstile_valid_settings()
+{
+    return [
+        'site_key',
+        'secret_key',
+        'theme',
+        'alignment',
+        'enable_login',
+        'enable_register',
+        'enable_pwreset',
+        'enable_contact',
+        'enable_ticket',
+        'enable_cart',
+        'custom_login_sel',
+        'custom_register_sel',
+        'custom_pwreset_sel',
+        'custom_contact_sel',
+        'custom_ticket_sel',
+        'custom_cart_sel',
+    ];
+}
+
+function peakrack_turnstile_default_settings()
+{
+    return [
+        'site_key' => '',
+        'secret_key' => '',
+        'theme' => 'auto',
+        'alignment' => 'center',
+        'enable_login' => '',
+        'enable_register' => '',
+        'enable_pwreset' => '',
+        'enable_contact' => '',
+        'enable_ticket' => '',
+        'enable_cart' => '',
+        'custom_login_sel' => '',
+        'custom_register_sel' => '',
+        'custom_pwreset_sel' => '',
+        'custom_contact_sel' => '',
+        'custom_ticket_sel' => '',
+        'custom_cart_sel' => '',
+    ];
+}
+
+function peakrack_turnstile_e($value)
+{
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
 function peakrack_turnstile_migrate_legacy_settings()
@@ -73,181 +167,225 @@ function peakrack_turnstile_migrate_legacy_settings()
     }
 }
 
+function peakrack_turnstile_load_settings()
+{
+    $settings = peakrack_turnstile_default_settings();
+    $rows = Capsule::table('tbladdonmodules')
+        ->where('module', 'peakrack_turnstile')
+        ->whereIn('setting', peakrack_turnstile_valid_settings())
+        ->get();
+
+    foreach ($rows as $row) {
+        if (isset($row->setting) && array_key_exists($row->setting, $settings)) {
+            $settings[$row->setting] = isset($row->value) ? (string) $row->value : '';
+        }
+    }
+
+    if (!in_array($settings['theme'], ['auto', 'light', 'dark'], true)) {
+        $settings['theme'] = 'auto';
+    }
+
+    if (!in_array($settings['alignment'], ['center', 'left'], true)) {
+        $settings['alignment'] = 'center';
+    }
+
+    return $settings;
+}
+
+function peakrack_turnstile_save_settings()
+{
+    foreach (peakrack_turnstile_valid_settings() as $setting) {
+        $value = isset($_POST[$setting]) ? trim((string) $_POST[$setting]) : '';
+
+        if (strpos($setting, 'enable_') === 0) {
+            $value = $value === 'on' ? 'on' : '';
+        }
+
+        if ($setting === 'theme' && !in_array($value, ['auto', 'light', 'dark'], true)) {
+            $value = 'auto';
+        }
+
+        if ($setting === 'alignment' && !in_array($value, ['center', 'left'], true)) {
+            $value = 'center';
+        }
+
+        Capsule::table('tbladdonmodules')->updateOrInsert(
+            ['module' => 'peakrack_turnstile', 'setting' => $setting],
+            ['value' => $value]
+        );
+    }
+}
+
+function peakrack_turnstile_checked($settings, $key)
+{
+    return !empty($settings[$key]) && $settings[$key] === 'on' ? ' checked' : '';
+}
+
+function peakrack_turnstile_select($settings, $key, $value)
+{
+    return isset($settings[$key]) && $settings[$key] === $value ? ' selected' : '';
+}
+
+function peakrack_turnstile_toggle($settings, $key, $title, $desc)
+{
+    return '<div class="prt-toggle">
+        <div>
+            <strong>' . peakrack_turnstile_e($title) . '</strong>
+            <span>' . peakrack_turnstile_e($desc) . '</span>
+        </div>
+        <label class="prt-switch">
+            <input type="checkbox" name="' . peakrack_turnstile_e($key) . '"' . peakrack_turnstile_checked($settings, $key) . '>
+            <span></span>
+        </label>
+    </div>';
+}
+
+function peakrack_turnstile_text_input($settings, $key, $title, $desc, $placeholder = '')
+{
+    return '<div class="prt-field">
+        <label for="' . peakrack_turnstile_e($key) . '">' . peakrack_turnstile_e($title) . '</label>
+        <input id="' . peakrack_turnstile_e($key) . '" type="text" name="' . peakrack_turnstile_e($key) . '" value="' . peakrack_turnstile_e($settings[$key] ?? '') . '" placeholder="' . peakrack_turnstile_e($placeholder) . '" autocomplete="off">
+        <p>' . peakrack_turnstile_e($desc) . '</p>
+    </div>';
+}
+
 function peakrack_turnstile_output($vars)
 {
     peakrack_turnstile_migrate_legacy_settings();
 
-    $moduleName = 'peakrack_turnstile';
-    $validSettings = [
-        'site_key', 'secret_key', 'theme', 
-        'enable_login', 'enable_register', 'enable_pwreset', 'enable_contact', 'enable_ticket', 'enable_cart',
-        'custom_login_sel', 'custom_register_sel', 'custom_pwreset_sel', 'custom_contact_sel', 'custom_ticket_sel', 'custom_cart_sel'
-    ];
-
-    // Handle Save
+    $saved = false;
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save') {
-        foreach ($validSettings as $setting) {
-            $value = isset($_POST[$setting]) ? trim($_POST[$setting]) : '';
-            
-            // Checkbox logic for WHMCS 'yesno' fields
-            if (strpos($setting, 'enable_') === 0) {
-                 $value = ($value === 'on') ? 'on' : '';
-            }
-
-            Capsule::table('tbladdonmodules')->updateOrInsert(
-                ['module' => $moduleName, 'setting' => $setting],
-                ['value' => $value]
-            );
-        }
-        echo '<div class="alert alert-success">设置已保存。</div>';
+        peakrack_turnstile_save_settings();
+        $saved = true;
     }
 
-    // Retrieve settings
-    $settings = [];
-    foreach ($validSettings as $key) {
-        $settings[$key] = Capsule::table('tbladdonmodules')->where('module', $moduleName)->where('setting', $key)->value('value');
-    }
+    $settings = peakrack_turnstile_load_settings();
 
-    // Render Form
     echo '<style>
-        .peakrack-card { background: #fff; padding: 25px; border-radius: 6px; border: 1px solid #e0e0e0; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .peakrack-card h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; color: #333; font-size: 18px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: #555; }
-        input[type="text"], input[type="password"], select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        input[type="text"]:focus, input[type="password"]:focus, select:focus { border-color: #2196F3; outline: none; }
-        .help-block { color: #888; font-size: 0.85em; margin-top: 5px; }
-        .row { display: flex; flex-wrap: wrap; margin: 0 -15px; }
-        .col-half { flex: 0 0 50%; padding: 0 15px; box-sizing: border-box; }
-        
-        /* Switch UI */
-        .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
-        .toggle-row:last-child { border-bottom: none; }
-        .switch { position: relative; display: inline-block; width: 46px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #4CAF50; }
-        input:checked + .slider:before { transform: translateX(20px); }
-        
-        .btn-save { background: #007bff; color: #fff; padding: 12px 30px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: 600; transition: background 0.2s; }
-        .btn-save:hover { background: #0056b3; }
-        .actions-row { margin-top: 20px; text-align: right; }
+        .peakrack-turnstile-admin { max-width: 1180px; margin: 0; color: #263238; }
+        .peakrack-turnstile-admin * { box-sizing: border-box; }
+        .prt-hero { background: #0f172a; color: #fff; border-radius: 6px; padding: 22px 24px; margin: 0 0 18px; }
+        .prt-hero h2 { margin: 0 0 8px; color: #fff; font-size: 22px; }
+        .prt-hero p { margin: 0; color: #cbd5e1; line-height: 1.6; }
+        .prt-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .prt-card { background: #fff; border: 1px solid #dfe4ea; border-radius: 6px; padding: 18px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(15, 23, 42, .05); }
+        .prt-card h3 { margin: 0 0 14px; color: #111827; font-size: 16px; border-bottom: 1px solid #eef2f7; padding-bottom: 10px; }
+        .prt-field { margin-bottom: 14px; }
+        .prt-field label { display: block; font-weight: 600; margin-bottom: 6px; color: #374151; }
+        .prt-field input, .prt-field select { width: 100%; max-width: 100%; height: 38px; border: 1px solid #cfd8e3; border-radius: 4px; padding: 7px 10px; color: #111827; background: #fff; }
+        .prt-field p, .prt-note, .prt-card li { color: #64748b; font-size: 12px; line-height: 1.6; margin: 5px 0 0; }
+        .prt-toggle { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 12px 0; border-bottom: 1px solid #eef2f7; }
+        .prt-toggle:last-child { border-bottom: 0; }
+        .prt-toggle strong { display: block; color: #111827; margin-bottom: 3px; }
+        .prt-toggle span { display: block; color: #64748b; font-size: 12px; line-height: 1.5; }
+        .prt-switch { position: relative; display: inline-block; width: 48px; height: 26px; flex: 0 0 48px; margin: 0; }
+        .prt-switch input { opacity: 0; width: 0; height: 0; }
+        .prt-switch span { position: absolute; inset: 0; cursor: pointer; background: #cbd5e1; border-radius: 999px; transition: .2s; }
+        .prt-switch span:before { content: ""; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+        .prt-switch input:checked + span { background: #16a34a; }
+        .prt-switch input:checked + span:before { transform: translateX(22px); }
+        .prt-alert { border-radius: 4px; padding: 12px 14px; margin-bottom: 16px; }
+        .prt-alert-success { background: #ecfdf5; border: 1px solid #bbf7d0; color: #166534; }
+        .prt-alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+        .prt-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .prt-table th, .prt-table td { border: 1px solid #e5e7eb; padding: 9px 10px; text-align: left; vertical-align: top; }
+        .prt-table th { background: #f8fafc; color: #334155; }
+        .prt-actions { display: flex; justify-content: flex-end; margin: 18px 0 0; }
+        .prt-save { background: #2563eb; border: 0; border-radius: 4px; color: #fff; font-weight: 600; padding: 10px 22px; cursor: pointer; }
+        .prt-save:hover { background: #1d4ed8; }
+        @media (max-width: 900px) { .prt-grid { grid-template-columns: 1fr; } }
     </style>';
+
+    echo '<div class="peakrack-turnstile-admin">
+        <div class="prt-hero">
+            <h2>PeakRack Turnstile 管理器</h2>
+            <p>优先适配 WHMCS 自带 Nexus、Six、Twenty-One 的登录、注册、密码重置、联系我们、提交工单、购物车/结账页面；再兼容 Lagom/Lagom2 等商业主题。Turnstile 统一显示为 Cloudflare 默认 320px 宽，可选择居中或左对齐，并位于提交动作区域上方。</p>
+        </div>';
+
+    if ($saved) {
+        echo '<div class="prt-alert prt-alert-success">设置已保存。</div>';
+    }
 
     echo '<form method="post" action="">
         <input type="hidden" name="action" value="save">
-        
-        <div class="peakrack-card">
-            <h3>API 配置</h3>
-            <div class="row">
-                <div class="col-half">
-                    <div class="form-group">
-                        <label>站点密钥</label>
-                        <input type="text" name="site_key" value="' . htmlspecialchars($settings['site_key']) . '" placeholder="0x4AAAAAA..." autocomplete="off">
-                    </div>
+
+        <div class="prt-grid">
+            <div class="prt-card">
+                <h3>Cloudflare 密钥</h3>
+                <div class="prt-field">
+                    <label for="site_key">Site Key / 站点密钥</label>
+                    <input id="site_key" type="text" name="site_key" value="' . peakrack_turnstile_e($settings['site_key']) . '" placeholder="0x4AAAAAA..." autocomplete="off">
+                    <p>填写 Cloudflare Turnstile 小组件的 Site Key。</p>
                 </div>
-                <div class="col-half">
-                    <div class="form-group">
-                        <label>私钥</label>
-                        <input type="password" name="secret_key" value="' . htmlspecialchars($settings['secret_key']) . '" placeholder="0x4AAAAAA..." autocomplete="off">
-                    </div>
+                <div class="prt-field">
+                    <label for="secret_key">Secret Key / 私钥</label>
+                    <input id="secret_key" type="password" name="secret_key" value="' . peakrack_turnstile_e($settings['secret_key']) . '" placeholder="0x4AAAAAA..." autocomplete="off">
+                    <p>用于服务端校验，请不要填写 Site Key。</p>
+                </div>
+                <div class="prt-field" style="max-width:220px">
+                    <label for="theme">小组件主题</label>
+                    <select id="theme" name="theme">
+                        <option value="auto"' . peakrack_turnstile_select($settings, 'theme', 'auto') . '>Auto / 自动</option>
+                        <option value="light"' . peakrack_turnstile_select($settings, 'theme', 'light') . '>Light / 浅色</option>
+                        <option value="dark"' . peakrack_turnstile_select($settings, 'theme', 'dark') . '>Dark / 深色</option>
+                    </select>
+                    <p>建议使用 Auto，让 Cloudflare 根据访问者环境自动选择。</p>
+                </div>
+                <div class="prt-field" style="max-width:220px">
+                    <label for="alignment">显示对齐方式</label>
+                    <select id="alignment" name="alignment">
+                        <option value="center"' . peakrack_turnstile_select($settings, 'alignment', 'center') . '>Center / 居中</option>
+                        <option value="left"' . peakrack_turnstile_select($settings, 'alignment', 'left') . '>Left / 左对齐</option>
+                    </select>
+                    <p>默认居中。某些模板按钮区域左对齐更自然时，可切换为左对齐。</p>
                 </div>
             </div>
-             <div class="form-group" style="max-width: 200px;">
-                <label>主题</label>
-                <select name="theme">
-                    <option value="auto" ' . ($settings['theme'] == 'auto' ? 'selected' : '') . '>自动</option>
-                    <option value="light" ' . ($settings['theme'] == 'light' ? 'selected' : '') . '>浅色</option>
-                    <option value="dark" ' . ($settings['theme'] == 'dark' ? 'selected' : '') . '>深色</option>
-                </select>
-            </div>
+
+            <div class="prt-card">
+                <h3>页面启用</h3>' .
+                peakrack_turnstile_toggle($settings, 'enable_login', '登录页', '客户登录页；购物车已启用验证时，不重复显示购物车登录验证码。') .
+                peakrack_turnstile_toggle($settings, 'enable_register', '注册页', '客户注册页；服务条款开关只影响显示位置，不影响验证逻辑。') .
+                peakrack_turnstile_toggle($settings, 'enable_pwreset', '密码重置', '找回密码邮箱提交步骤。') .
+                peakrack_turnstile_toggle($settings, 'enable_contact', '联系我们', '联系我们表单提交前验证。') .
+                peakrack_turnstile_toggle($settings, 'enable_ticket', '提交工单', '提交新工单前验证。') .
+                peakrack_turnstile_toggle($settings, 'enable_cart', '购物车/结账', '完成订单前验证；结账页只显示一个 Turnstile。') .
+            '</div>
         </div>
 
-        <div class="row">
-            <div class="col-half">
-                <div class="peakrack-card">
-                    <h3>页面启用设置</h3>
-                    <div class="toggle-row">
-                        <span>登录页</span>
-                        <label class="switch">
-                            <input type="checkbox" name="enable_login" ' . ($settings['enable_login'] == 'on' ? 'checked' : '') . '>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                     <div class="toggle-row">
-                        <span>注册页</span>
-                        <label class="switch">
-                            <input type="checkbox" name="enable_register" ' . ($settings['enable_register'] == 'on' ? 'checked' : '') . '>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                     <div class="toggle-row">
-                        <span>密码重置</span>
-                        <label class="switch">
-                            <input type="checkbox" name="enable_pwreset" ' . ($settings['enable_pwreset'] == 'on' ? 'checked' : '') . '>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                     <div class="toggle-row">
-                        <span>联系我们</span>
-                        <label class="switch">
-                            <input type="checkbox" name="enable_contact" ' . ($settings['enable_contact'] == 'on' ? 'checked' : '') . '>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                     <div class="toggle-row">
-                        <span>提交工单</span>
-                        <label class="switch">
-                            <input type="checkbox" name="enable_ticket" ' . ($settings['enable_ticket'] == 'on' ? 'checked' : '') . '>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                     <div class="toggle-row">
-                        <span>购物车/结账</span>
-                        <label class="switch">
-                            <input type="checkbox" name="enable_cart" ' . ($settings['enable_cart'] == 'on' ? 'checked' : '') . '>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-half">
-                <div class="peakrack-card">
-                    <h3>高级设置：自定义选择器</h3>
-                    <p class="help-block" style="margin-bottom: 15px;">填写 jQuery 选择器（例如 <code>.btn-submit</code>），模块会在对应元素前自动插入 Turnstile。留空则使用自动识别。</p>
-                    
-                    <div class="form-group">
-                        <label>登录页选择器</label>
-                        <input type="text" name="custom_login_sel" value="' . htmlspecialchars($settings['custom_login_sel']) . '">
-                    </div>
-                    <div class="form-group">
-                        <label>注册页选择器</label>
-                        <input type="text" name="custom_register_sel" value="' . htmlspecialchars($settings['custom_register_sel']) . '">
-                    </div>
-                    <div class="form-group">
-                        <label>密码重置选择器</label>
-                        <input type="text" name="custom_pwreset_sel" value="' . htmlspecialchars($settings['custom_pwreset_sel']) . '">
-                    </div>
-                    <div class="form-group">
-                        <label>联系我们选择器</label>
-                        <input type="text" name="custom_contact_sel" value="' . htmlspecialchars($settings['custom_contact_sel']) . '">
-                    </div>
-                    <div class="form-group">
-                        <label>工单选择器</label>
-                        <input type="text" name="custom_ticket_sel" value="' . htmlspecialchars($settings['custom_ticket_sel']) . '">
-                    </div>
-                    <div class="form-group">
-                        <label>购物车/结账选择器</label>
-                        <input type="text" name="custom_cart_sel" value="' . htmlspecialchars($settings['custom_cart_sel']) . '">
-                    </div>
-                </div>
-            </div>
+        <div class="prt-card">
+            <h3>服务条款接受开关影响检查</h3>
+            <div class="prt-alert prt-alert-info">WHMCS 的“启用服务条款接受”只会影响注册页和购物车/结账页是否出现服务条款区域。插件会自动处理：有服务条款时放在服务条款之后、提交按钮之前；没有服务条款时放在提交按钮之前。其它页面统一放在提交按钮之前。它不会影响登录页、密码重置、联系我们、提交工单的服务端验证。</div>
+            <table class="prt-table">
+                <thead>
+                    <tr><th>页面</th><th>Nexus / Six / Twenty-One</th><th>Lagom / Lagom2</th><th>服务条款开关影响</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>登录页</td><td>form.login-form、#login</td><td>form.login-form、.login-captcha</td><td>无影响</td></tr>
+                    <tr><td>注册页</td><td>#frmCheckout、accepttos、提交按钮</td><td>#frmCheckout、Lagom 注册表单、accepttos</td><td>开启时条款后、按钮前；关闭时按钮前</td></tr>
+                    <tr><td>密码重置</td><td>#resetPasswordButton、密码重置表单</td><td>loginForm、.login-captcha、密码重置表单</td><td>无影响</td></tr>
+                    <tr><td>联系我们</td><td>contact.php 表单、action=send</td><td>contact.php 表单、Lagom captcha 容器</td><td>无影响</td></tr>
+                    <tr><td>提交工单</td><td>#openTicketSubmit</td><td>#openTicketSubmit、.login-captcha</td><td>无影响</td></tr>
+                    <tr><td>购物车/结账</td><td>#frmCheckout、#btnCompleteOrder、accepttos</td><td>#frmCheckout、#checkout、#submit-checkout、order-checkbox</td><td>开启时条款后、按钮前；关闭时按钮前</td></tr>
+                </tbody>
+            </table>
         </div>
 
-        <div class="actions-row">
-            <button type="submit" class="btn-save">保存配置</button>
+        <div class="prt-card">
+            <h3>高级设置：自定义选择器</h3>
+            <p class="prt-note">一般留空。只有自定义主题自动识别不到位置时才填写。填写后会优先尝试你的 selector，但系统模板和 Lagom 默认适配仍然保留。</p>
+            <div class="prt-grid">' .
+                peakrack_turnstile_text_input($settings, 'custom_login_sel', '登录页选择器', '例：#login 或 form.login-form button[type="submit"]。', '#login') .
+                peakrack_turnstile_text_input($settings, 'custom_register_sel', '注册页选择器', '例：#btnRegister 或注册表单提交按钮。', '#btnRegister') .
+                peakrack_turnstile_text_input($settings, 'custom_pwreset_sel', '密码重置选择器', '例：#resetPasswordButton。', '#resetPasswordButton') .
+                peakrack_turnstile_text_input($settings, 'custom_contact_sel', '联系我们选择器', '例：form[action*="contact.php"] button[type="submit"]。', 'form[action*="contact.php"] button[type="submit"]') .
+                peakrack_turnstile_text_input($settings, 'custom_ticket_sel', '提交工单选择器', '例：#openTicketSubmit。', '#openTicketSubmit') .
+                peakrack_turnstile_text_input($settings, 'custom_cart_sel', '购物车/结账选择器', '例：#btnCompleteOrder 或 #checkout。', '#btnCompleteOrder') .
+            '</div>
         </div>
-    </form>';
+
+        <div class="prt-actions">
+            <button type="submit" class="prt-save">保存设置</button>
+        </div>
+    </form>
+    </div>';
 }
