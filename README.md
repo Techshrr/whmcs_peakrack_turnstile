@@ -1,4 +1,4 @@
-# PeakRack Turnstile for WHMCS
+# WHMCS PeakRack Turnstile
 
 PeakRack Turnstile is a WHMCS addon module that replaces legacy captcha output with Cloudflare Turnstile.
 
@@ -16,7 +16,22 @@ Chinese documentation: [README.zh-CN.md](README.zh-CN.md)
 
 ## Installation
 
-Upload the `peakrack_turnstile` directory to:
+The repository keeps documentation at the root and deployable files inside the `whmcs_peakrack_turnstile` package directory:
+
+```text
+whmcs_peakrack_turnstile/
+  modules/
+    addons/
+      peakrack_turnstile/
+```
+
+Upload or copy this directory to your WHMCS root:
+
+```text
+whmcs_peakrack_turnstile/modules
+```
+
+The final addon path should be:
 
 ```text
 modules/addons/peakrack_turnstile/
@@ -48,6 +63,13 @@ Set the captcha type to **Always Off**.
 - Added a global frontend alignment option: center or left.
 - Kept the Cloudflare default visual widget width across supported templates.
 - Improved placement consistency across Nexus, Six, Twenty-One, and Lagom/Lagom2 pages.
+
+### 1.4.2
+
+- Renamed the local/repository package shape to `whmcs_peakrack_turnstile`.
+- Normalized the deployable files under `whmcs_peakrack_turnstile/modules` for consistent WHMCS plugin releases.
+
+Detailed upgrade notes: [UPGRADE.md](UPGRADE.md).
 
 ## License
 

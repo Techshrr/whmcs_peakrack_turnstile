@@ -1,4 +1,4 @@
-# PeakRack Turnstile WHMCS 插件
+# WHMCS PeakRack Turnstile 插件
 
 PeakRack Turnstile 是用于 WHMCS 的 Cloudflare Turnstile 验证码插件。
 
@@ -23,4 +23,4 @@ modules/addons/peakrack_turnstile/
 
 ## 开源协议
 
-MIT License。详见 [../LICENSE](../LICENSE)。
+MIT License。详见仓库根目录 [LICENSE](../../../../LICENSE)。

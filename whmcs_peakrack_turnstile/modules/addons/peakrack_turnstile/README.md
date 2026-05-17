@@ -1,4 +1,4 @@
-# PeakRack Turnstile for WHMCS
+# WHMCS PeakRack Turnstile
 
 PeakRack Turnstile is a WHMCS addon module that replaces legacy captcha output with Cloudflare Turnstile.
 
@@ -44,4 +44,4 @@ Set the captcha type to **Always Off**.
 
 ## License
 
-MIT License. See [../LICENSE](../LICENSE).
+MIT License. See the repository root [LICENSE](../../../../LICENSE).

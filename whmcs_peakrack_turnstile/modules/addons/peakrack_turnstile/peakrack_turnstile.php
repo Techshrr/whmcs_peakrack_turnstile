@@ -13,7 +13,7 @@ function peakrack_turnstile_config()
         'description' => '使用 Cloudflare Turnstile 替换 WHMCS 默认验证码。优先适配 Nexus、Six、Twenty-One，再兼容 Lagom/Lagom2 等商业主题。',
         'author' => 'PeakRack',
         'language' => 'english',
-        'version' => '1.4.1',
+        'version' => '1.4.2',
         'fields' => [
             'site_key' => [
                 'FriendlyName' => 'Site Key / 站点密钥',

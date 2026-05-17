@@ -1,4 +1,4 @@
-# PeakRack Turnstile WHMCS 插件
+# WHMCS PeakRack Turnstile 插件
 
 PeakRack Turnstile 是用于 WHMCS 的 Cloudflare Turnstile 验证码插件，用于替换旧式验证码显示。
 
@@ -16,7 +16,22 @@ English documentation: [README.md](README.md)
 
 ## 安装
 
-把 `peakrack_turnstile` 目录上传到：
+仓库根目录保留说明文档，真正用于上传部署的文件放在 `whmcs_peakrack_turnstile` 发布目录中：
+
+```text
+whmcs_peakrack_turnstile/
+  modules/
+    addons/
+      peakrack_turnstile/
+```
+
+把这个路径上传到 WHMCS 根目录：
+
+```text
+whmcs_peakrack_turnstile/modules
+```
+
+上传后的最终插件路径应为：
 
 ```text
 modules/addons/peakrack_turnstile/
@@ -48,6 +63,13 @@ modules/addons/peakrack_turnstile/
 - 新增全局前台对齐方式：居中或左对齐。
 - 保持 Cloudflare 默认视觉宽度，减少不同模板里的横向拉伸。
 - 优化 Nexus、Six、Twenty-One、Lagom/Lagom2 多页面显示位置一致性。
+
+### 1.4.2
+
+- 将本地/仓库发布包命名统一为 `whmcs_peakrack_turnstile`。
+- 将可部署文件统一放到 `whmcs_peakrack_turnstile/modules`，方便和其他 WHMCS 插件仓库保持一致。
+
+详细升级说明见 [UPGRADE.zh-CN.md](UPGRADE.zh-CN.md)。
 
 ## 开源协议
 
