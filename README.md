@@ -16,19 +16,16 @@ Chinese documentation: [README.zh-CN.md](README.zh-CN.md)
 
 ## Installation
 
-The repository keeps documentation at the root and deployable files inside the `whmcs_peakrack_turnstile` package directory:
+The repository root is intentionally shallow for GitHub browsing. The deployable addon is the `peakrack_turnstile` directory:
 
 ```text
-whmcs_peakrack_turnstile/
-  modules/
-    addons/
-      peakrack_turnstile/
+peakrack_turnstile/
 ```
 
-Upload or copy this directory to your WHMCS root:
+Upload or copy it to this WHMCS path:
 
 ```text
-whmcs_peakrack_turnstile/modules
+modules/addons/peakrack_turnstile/
 ```
 
 The final addon path should be:
@@ -68,6 +65,11 @@ Set the captcha type to **Always Off**.
 
 - Renamed the local/repository package shape to `whmcs_peakrack_turnstile`.
 - Normalized the deployable files under `whmcs_peakrack_turnstile/modules` for consistent WHMCS plugin releases.
+
+### 1.4.3
+
+- Flattened the GitHub repository layout so `peakrack_turnstile/` is visible at the root.
+- Updated installation and upgrade documentation for the direct addon-folder layout.
 
 Detailed upgrade notes: [UPGRADE.md](UPGRADE.md).
 

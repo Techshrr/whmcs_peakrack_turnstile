@@ -16,19 +16,16 @@ English documentation: [README.md](README.md)
 
 ## 安装
 
-仓库根目录保留说明文档，真正用于上传部署的文件放在 `whmcs_peakrack_turnstile` 发布目录中：
+仓库根目录改为更适合 GitHub 浏览的浅层结构，真正用于上传部署的插件目录就是 `peakrack_turnstile`：
 
 ```text
-whmcs_peakrack_turnstile/
-  modules/
-    addons/
-      peakrack_turnstile/
+peakrack_turnstile/
 ```
 
-把这个路径上传到 WHMCS 根目录：
+把它上传到 WHMCS 的这个路径：
 
 ```text
-whmcs_peakrack_turnstile/modules
+modules/addons/peakrack_turnstile/
 ```
 
 上传后的最终插件路径应为：
@@ -68,6 +65,11 @@ modules/addons/peakrack_turnstile/
 
 - 将本地/仓库发布包命名统一为 `whmcs_peakrack_turnstile`。
 - 将可部署文件统一放到 `whmcs_peakrack_turnstile/modules`，方便和其他 WHMCS 插件仓库保持一致。
+
+### 1.4.3
+
+- 压平 GitHub 仓库结构，根目录直接显示 `peakrack_turnstile/`。
+- 更新安装和升级文档，改为直接上传插件目录到 `modules/addons/`。
 
 详细升级说明见 [UPGRADE.zh-CN.md](UPGRADE.zh-CN.md)。
 

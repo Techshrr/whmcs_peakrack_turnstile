@@ -23,4 +23,4 @@ modules/addons/peakrack_turnstile/
 
 ## 开源协议
 
-MIT License。详见仓库根目录 [LICENSE](../../../../LICENSE)。
+MIT License。详见仓库根目录 [LICENSE](../LICENSE)。

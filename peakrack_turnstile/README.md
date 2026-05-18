@@ -36,6 +36,10 @@ Set the captcha type to **Always Off**.
 
 ## Release Notes
 
+### 1.4.3
+
+- Repository root now shows this addon directory directly for easier GitHub browsing.
+
 ### 1.4.1
 
 - Added a global frontend alignment option: center or left.
@@ -44,4 +48,4 @@ Set the captcha type to **Always Off**.
 
 ## License
 
-MIT License. See the repository root [LICENSE](../../../../LICENSE).
+MIT License. See the repository root [LICENSE](../LICENSE).
