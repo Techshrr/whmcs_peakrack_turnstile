@@ -9,11 +9,11 @@ if (!defined('WHMCS')) {
 function peakrack_turnstile_config()
 {
     return [
-        'name' => 'PeakRack Turnstile 管理器',
+        'name' => 'PeakRack Turnstile Manager',
         'description' => '使用 Cloudflare Turnstile 替换 WHMCS 默认验证码。优先适配 Nexus、Six、Twenty-One，再兼容 Lagom/Lagom2 等商业主题。',
         'author' => 'PeakRack',
         'language' => 'english',
-        'version' => '1.4.4',
+        'version' => '1.4.5',
         'fields' => [
             'site_key' => [
                 'FriendlyName' => 'Site Key / 站点密钥',
@@ -177,9 +177,9 @@ function peakrack_turnstile_admin_text(string $language, string $key): string
 {
     $texts = [
         'zh' => [
-            'title' => 'PeakRack Turnstile 管理器',
+            'title' => 'PeakRack Turnstile Manager',
             'subtitle' => '优先适配 WHMCS 自带 Nexus、Six、Twenty-One 的登录、注册、密码重置、联系我们、提交工单、购物车/结账页面；再兼容 Lagom/Lagom2 等商业主题。Turnstile 统一显示为 Cloudflare 默认 320px 宽，可选择居中或左对齐，并位于提交动作区域上方。',
-            'version' => '版本 1.4.4',
+            'version' => '版本 1.4.5',
             'saved' => '设置已保存。',
             'keys' => 'Cloudflare 密钥',
             'site_key' => 'Site Key / 站点密钥',
@@ -230,7 +230,7 @@ function peakrack_turnstile_admin_text(string $language, string $key): string
         'en' => [
             'title' => 'PeakRack Turnstile Manager',
             'subtitle' => 'Prioritizes WHMCS built-in Nexus, Six, and Twenty-One pages for login, registration, password reset, contact, ticket submission, and cart/checkout, then supports commercial themes such as Lagom/Lagom2. The widget keeps the standard Cloudflare 320px visual width, can be centered or left aligned, and is placed near the submit action.',
-            'version' => 'Version 1.4.4',
+            'version' => 'Version 1.4.5',
             'saved' => 'Settings saved.',
             'keys' => 'Cloudflare Keys',
             'site_key' => 'Site Key',
@@ -411,14 +411,15 @@ function peakrack_turnstile_output($vars)
     echo '<style>
         .peakrack-turnstile-admin { max-width: 1180px; margin: 0; color: #263238; }
         .peakrack-turnstile-admin * { box-sizing: border-box; }
-        .prt-hero { background: #0f172a; color: #fff; border-radius: 6px; padding: 22px 24px; margin: 0 0 18px; }
-        .prt-hero-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+        .prt-hero { position: relative; min-height: 128px; background: #0f172a; color: #fff; border-radius: 6px; padding: 22px 188px 22px 24px; margin: 0 0 18px; }
+        .prt-hero-head { display: block; }
+        .prt-hero-main { max-width: 100%; }
         .prt-hero h2 { margin: 0 0 8px; color: #fff; font-size: 22px; }
         .prt-hero p { margin: 0; color: #cbd5e1; line-height: 1.6; }
-        .prt-head-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
-        .prt-badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 3px 9px; background: rgba(37,99,235,.18); color: #bfdbfe; border: 1px solid rgba(191,219,254,.35); font-size: 12px; font-weight: 700; white-space: nowrap; }
-        .prt-lang { display: inline-flex; border: 1px solid rgba(203,213,225,.45); border-radius: 6px; overflow: hidden; background: rgba(255,255,255,.06); }
-        .prt-lang a { display: inline-flex; align-items: center; padding: 6px 9px; color: #cbd5e1; text-decoration: none; font-size: 12px; font-weight: 700; }
+        .prt-head-actions { position: absolute; top: 22px; right: 24px; width: 144px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+        .prt-badge { display: inline-flex; align-items: center; justify-content: center; min-height: 26px; border-radius: 999px; padding: 3px 10px; background: rgba(37,99,235,.18); color: #bfdbfe; border: 1px solid rgba(191,219,254,.35); font-size: 12px; font-weight: 700; white-space: nowrap; }
+        .prt-lang { display: grid; grid-template-columns: 1fr 1fr; width: 132px; height: 38px; border: 1px solid rgba(203,213,225,.45); border-radius: 6px; overflow: hidden; background: rgba(255,255,255,.06); }
+        .prt-lang a { display: inline-flex; align-items: center; justify-content: center; min-width: 0; height: 38px; padding: 0 8px; color: #cbd5e1; text-decoration: none; font-size: 12px; font-weight: 700; line-height: 1; white-space: nowrap; }
         .prt-lang a.active { background: #2563eb; color: #fff; }
         .prt-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
         .prt-card { background: #fff; border: 1px solid #dfe4ea; border-radius: 6px; padding: 18px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(15, 23, 42, .05); }
@@ -446,13 +447,13 @@ function peakrack_turnstile_output($vars)
         .prt-actions { display: flex; justify-content: flex-end; margin: 18px 0 0; }
         .prt-save { background: #2563eb; border: 0; border-radius: 4px; color: #fff; font-weight: 600; padding: 10px 22px; cursor: pointer; }
         .prt-save:hover { background: #1d4ed8; }
-        @media (max-width: 900px) { .prt-grid { grid-template-columns: 1fr; } .prt-hero-head { display: block; } .prt-head-actions { justify-content: flex-start; margin-top: 12px; } }
+        @media (max-width: 900px) { .prt-grid { grid-template-columns: 1fr; } .prt-hero { padding: 22px 20px; } .prt-head-actions { position: static; width: auto; align-items: flex-start; margin-top: 14px; } }
     </style>';
 
     echo '<div class="peakrack-turnstile-admin">
         <div class="prt-hero">
             <div class="prt-hero-head">
-                <div>
+                <div class="prt-hero-main">
                     <h2>' . peakrack_turnstile_e($t('title')) . '</h2>
                     <p>' . peakrack_turnstile_e($t('subtitle')) . '</p>
                 </div>

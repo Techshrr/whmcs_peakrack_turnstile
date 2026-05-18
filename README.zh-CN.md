@@ -38,9 +38,9 @@ modules/addons/peakrack_turnstile/
 然后在 WHMCS 后台：
 
 1. 进入 **系统设置 > 插件模块**。
-2. 启用 **PeakRack Turnstile 管理器**。
+2. 启用 **PeakRack Turnstile Manager**。
 3. 给对应管理员角色组授权访问。
-4. 进入 **插件 > PeakRack Turnstile 管理器**。
+4. 进入 **插件 > PeakRack Turnstile Manager**。
 5. 填写 Cloudflare Turnstile Site Key 和 Secret Key。
 6. 勾选需要启用验证的页面。
 
@@ -55,6 +55,11 @@ modules/addons/peakrack_turnstile/
 将验证码类型设置为 **Always Off**。
 
 ## 更新记录
+
+### 1.4.5
+
+- 将 WHMCS 插件标题固定为 `PeakRack Turnstile Manager`。
+- 固定右上角版本号和语言切换区域宽度，避免随中英文说明文字行数变化而错位。
 
 ### 1.4.4
 

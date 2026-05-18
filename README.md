@@ -56,6 +56,11 @@ Set the captcha type to **Always Off**.
 
 ## Release Notes
 
+### 1.4.5
+
+- Fixed the WHMCS addon title to `PeakRack Turnstile Manager`.
+- Stabilized the top-right version badge and language switch so it no longer shifts with translated text length.
+
 ### 1.4.4
 
 - Added a Chinese / English admin language switch to the Turnstile manager.

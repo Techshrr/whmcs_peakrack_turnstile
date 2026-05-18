@@ -1,5 +1,13 @@
 # 升级说明
 
+## 1.4.5
+
+- 将 WHMCS 插件标题固定为 `PeakRack Turnstile Manager`。
+- 固定右上角版本号和语言切换区域布局，避免随说明文字行数变化。
+- 已安装站点升级到此版本不需要修改数据库。
+- 手动更新时，把 `peakrack_turnstile/` 覆盖上传到 `modules/addons/peakrack_turnstile/`。
+- 插件版本号升级到 `1.4.5`。
+
 ## 1.4.4
 
 - 在 Turnstile 管理器页面右上角增加 `中文 / English` 后台语言切换按钮。
