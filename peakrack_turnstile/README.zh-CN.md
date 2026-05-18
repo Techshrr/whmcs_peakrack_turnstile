@@ -20,6 +20,7 @@ modules/addons/peakrack_turnstile/
 - 优先适配 Nexus、Six、Twenty-One，再兼容 Lagom/Lagom2。
 - 支持 Turnstile 主题和前台对齐方式配置。
 - 支持自定义选择器，便于适配特殊模板。
+- 管理器页面支持中文 / English 后台语言切换。
 
 ## 开源协议
 

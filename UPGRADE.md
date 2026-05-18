@@ -1,5 +1,11 @@
 # Upgrade Notes
 
+## 1.4.4
+
+- Added a top-right Chinese / English admin language switch to the Turnstile manager page.
+- Localized the main Turnstile manager UI labels, notices, table headings, and save message.
+- Addon version bumped to `1.4.4`.
+
 ## 1.4.3
 
 - Repository layout only: the deployable addon now lives at repository root as `peakrack_turnstile/`.

@@ -13,6 +13,7 @@ English documentation: [README.md](README.md)
 - 自动处理 WHMCS “启用服务条款接受”开关开启或关闭时的结账页位置。
 - 使用 Cloudflare 显式渲染 API，确保 Hook 插入的小组件稳定渲染。
 - 服务端校验 token，并在同一请求内缓存校验结果。
+- Turnstile 管理器页面右上角提供中文 / English 后台语言切换按钮。
 
 ## 安装
 
@@ -54,6 +55,11 @@ modules/addons/peakrack_turnstile/
 将验证码类型设置为 **Always Off**。
 
 ## 更新记录
+
+### 1.4.4
+
+- 在 Turnstile 管理器增加中文 / English 后台语言切换按钮。
+- 管理器主要配置文字支持中英文切换。
 
 ### 1.4.1
 

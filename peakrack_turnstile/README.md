@@ -13,6 +13,7 @@ Chinese documentation: [README.zh-CN.md](README.zh-CN.md)
 - Handles checkout terms-of-service placement whether the WHMCS terms checkbox is enabled or disabled.
 - Explicit Turnstile rendering for widgets inserted by WHMCS hooks.
 - Server-side token verification with per-request result caching.
+- Turnstile manager page includes a Chinese / English admin language switch.
 
 ## Installation
 
@@ -35,6 +36,11 @@ System Settings > General Settings > Security > Captcha Form Protection
 Set the captcha type to **Always Off**.
 
 ## Release Notes
+
+### 1.4.4
+
+- Added a Chinese / English admin language switch to the Turnstile manager.
+- Localized the main manager UI text.
 
 ### 1.4.3
 
