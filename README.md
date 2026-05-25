@@ -8,12 +8,22 @@ Chinese documentation: [README.zh-CN.md](README.zh-CN.md)
 
 - Supports WHMCS 9.x client-area pages: login, registration, password reset, contact, support ticket submission, and shopping cart checkout.
 - Prioritizes built-in WHMCS templates Nexus, Six, and Twenty-One, with compatibility handling for Lagom/Lagom2.
+- Covers Standard Cart, Nexus Cart, Lagom Cart/Lagom Checkout, and common WHMCS order form templates.
 - Admin page for Site Key, Secret Key, page toggles, widget theme, widget alignment, and custom selectors.
 - Cloudflare default visual widget width with selectable center or left alignment.
-- Handles checkout terms-of-service placement whether the WHMCS terms checkbox is enabled or disabled.
+- Handles checkout terms-of-service placement and keeps the widget near the intended submit action.
+- Handles dynamically rendered cart and checkout forms with DOM mutation monitoring.
+- Adds Turnstile tokens to checkout-page existing customer login requests sent to `/login/cart`.
 - Explicit Turnstile rendering for widgets inserted by WHMCS hooks.
 - Server-side token verification with per-request result caching.
 - Turnstile manager page includes a Chinese / English admin language switch.
+
+## Requirements
+
+- WHMCS 9.x
+- PHP 8.2 or PHP 8.3
+- Cloudflare Turnstile Site Key and Secret Key
+- File deployment access to the WHMCS `modules/addons/` directory
 
 ## Installation
 
@@ -32,7 +42,8 @@ modules/addons/peakrack_turnstile/
 The final addon path should be:
 
 ```text
-modules/addons/peakrack_turnstile/
+modules/addons/peakrack_turnstile/hooks.php
+modules/addons/peakrack_turnstile/peakrack_turnstile.php
 ```
 
 Then in WHMCS Admin:
@@ -43,6 +54,7 @@ Then in WHMCS Admin:
 4. Open **Addons > PeakRack Turnstile Manager**.
 5. Enter the Cloudflare Turnstile Site Key and Secret Key.
 6. Enable the pages that should require verification.
+7. Choose the frontend widget alignment. Center alignment is recommended for most themes; left alignment is available for templates with left-aligned action areas.
 
 ## Recommended WHMCS Setting
 
@@ -54,7 +66,32 @@ System Settings > General Settings > Security > Captcha Form Protection
 
 Set the captcha type to **Always Off**.
 
+## Theme And Cart Compatibility
+
+The default selectors cover:
+
+- WHMCS built-in themes: Nexus, Six, Twenty-One
+- Lagom / Lagom2 client-area themes
+- Standard Cart
+- Nexus Cart
+- Lagom Cart / Lagom Checkout
+- Common legacy WHMCS order forms, including Legacy Boxes, Legacy Modern, Premium Comparison, Pure Comparison, Supreme Comparison, and Universal Slider
+
+For heavily customized themes, use **Advanced Settings: Custom Selectors** in the addon manager to target the desired form or submit action. Custom selectors should only be needed when the default placement logic cannot identify the local template structure.
+
 ## Release Notes
+
+### 1.4.7
+
+- Improved Turnstile placement across Lagom, Nexus, Six, Twenty-One, Standard Cart, Nexus Cart, and Lagom checkout layouts.
+- Added DOM mutation handling for dynamically rendered cart and checkout forms.
+- Improved token synchronization and removed reliance on deprecated jQuery trim helpers.
+
+### 1.4.6
+
+- Fixed checkout-page existing customer login AJAX requests to include `cf-turnstile-response`.
+- Returns JSON for `/login/cart` captcha failures instead of redirecting to `login.php?error=captcha`.
+- Prevents hidden checkout login containers from placing a widget in the complete-order area.
 
 ### 1.4.5
 

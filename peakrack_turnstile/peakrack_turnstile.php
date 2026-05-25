@@ -13,7 +13,7 @@ function peakrack_turnstile_config()
         'description' => '使用 Cloudflare Turnstile 替换 WHMCS 默认验证码。优先适配 Nexus、Six、Twenty-One，再兼容 Lagom/Lagom2 等商业主题。',
         'author' => 'PeakRack',
         'language' => 'english',
-        'version' => '1.4.5',
+        'version' => '1.4.7',
         'fields' => [
             'site_key' => [
                 'FriendlyName' => 'Site Key / 站点密钥',
@@ -179,7 +179,7 @@ function peakrack_turnstile_admin_text(string $language, string $key): string
         'zh' => [
             'title' => 'PeakRack Turnstile Manager',
             'subtitle' => '优先适配 WHMCS 自带 Nexus、Six、Twenty-One 的登录、注册、密码重置、联系我们、提交工单、购物车/结账页面；再兼容 Lagom/Lagom2 等商业主题。Turnstile 统一显示为 Cloudflare 默认 320px 宽，可选择居中或左对齐，并位于提交动作区域上方。',
-            'version' => '版本 1.4.5',
+            'version' => '版本 1.4.7',
             'saved' => '设置已保存。',
             'keys' => 'Cloudflare 密钥',
             'site_key' => 'Site Key / 站点密钥',
@@ -230,7 +230,7 @@ function peakrack_turnstile_admin_text(string $language, string $key): string
         'en' => [
             'title' => 'PeakRack Turnstile Manager',
             'subtitle' => 'Prioritizes WHMCS built-in Nexus, Six, and Twenty-One pages for login, registration, password reset, contact, ticket submission, and cart/checkout, then supports commercial themes such as Lagom/Lagom2. The widget keeps the standard Cloudflare 320px visual width, can be centered or left aligned, and is placed near the submit action.',
-            'version' => 'Version 1.4.5',
+            'version' => 'Version 1.4.7',
             'saved' => 'Settings saved.',
             'keys' => 'Cloudflare Keys',
             'site_key' => 'Site Key',

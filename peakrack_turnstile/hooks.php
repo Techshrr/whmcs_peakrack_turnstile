@@ -257,6 +257,23 @@ function peakrack_turnstile_is_cart_login_request()
     return strpos($requestUri, 'login/cart') !== false;
 }
 
+function peakrack_turnstile_reject_login()
+{
+    if (peakrack_turnstile_is_cart_login_request()) {
+        http_response_code(200);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'success' => false,
+            'error' => peakrack_turnstile_text('error'),
+            'message' => peakrack_turnstile_text('error'),
+        ]);
+        exit;
+    }
+
+    header('Location: login.php?error=captcha');
+    exit;
+}
+
 if (
     php_sapi_name() !== 'cli'
     && basename($_SERVER['SCRIPT_NAME'] ?? '') === 'contact.php'
@@ -290,8 +307,7 @@ if (
         && !(peakrack_turnstile_is_cart_login_request() && peakrack_turnstile_is_enabled('enable_cart'))
         && !peakrack_turnstile_post_is_valid()
     ) {
-        header('Location: login.php?error=captcha');
-        exit;
+        peakrack_turnstile_reject_login();
     }
 }
 
@@ -370,9 +386,12 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             'form[action*="dologin"] button[type="submit"], form[action*="dologin"] input[type="submit"]',
             'form[action*="login/validate"] button[type="submit"], form[action*="login/validate"] input[type="submit"]',
             'form[action*="login%2fvalidate"] button[type="submit"], form[action*="login%2fvalidate"] input[type="submit"]',
+            'form.login-form .login-captcha',
+            'form.loginForm .login-captcha',
             '.peakrack-login-wrap form button[type="submit"]',
         ], [
             'form.login-form',
+            'form.loginForm',
             'form[action*="dologin"]',
             'form[action*="login/validate"]',
             'form[action*="login%2fvalidate"]',
@@ -383,6 +402,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
     if ($templatefile === 'clientregister') {
         peakrack_turnstile_add_placement($placements, 'enable_register', 'custom_register_sel', [
             'form#frmCheckout button[type="submit"], form#frmCheckout input[type="submit"]',
+            'form#frmCheckout .form-actions button[type="submit"], form#frmCheckout .form-actions input[type="submit"]',
             'form:has(input[name="register"][value="true"]) button[type="submit"], form:has(input[name="register"][value="true"]) input[type="submit"]',
             '#btnRegister',
             '.peakrack-register-wrap form button[type="submit"]',
@@ -390,6 +410,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             'form#frmCheckout',
             'form:has(input[name="register"][value="true"])',
             'form[action*="register"]',
+            'form.loginForm:has(input[name="register"][value="true"])',
             '.peakrack-register-wrap form',
         ], 'register');
     }
@@ -404,6 +425,9 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             'form[action*="password/reset"] button[type="submit"], form[action*="password/reset"] input[type="submit"]',
             'form[action*="validate-email"] button[type="submit"], form[action*="validate-email"] input[type="submit"]',
             'form[action*="password%2freset"] button[type="submit"], form[action*="password%2freset"] input[type="submit"]',
+            'form[action*="password/reset"] .login-captcha',
+            'form[action*="validate-email"] .login-captcha',
+            'form[action*="password%2freset"] .login-captcha',
         ], [
             'input[type="hidden"][name="action"][value="reset"]',
             'form[action*="password-reset-validate-email"]',
@@ -619,6 +643,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
     var config = __MEGABRE_TURNSTILE_CONFIG__;
     var renderAttempts = 0;
     var checkoutRelocationAttempts = 0;
+    var domObserverTimer = null;
 
     if (!$) {
         window.console && console.warn && console.warn('Cloudflare Turnstile: jQuery is required for WHMCS form injection.');
@@ -656,7 +681,9 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
         var $scope = $form && $form.length ? $form : $(document);
         var $slot = $scope.find(
             '.peakrack-turnstile-native-slot,' +
+            '.login-captcha,' +
             '#captchaContainer,' +
+            '.captcha,' +
             '.recaptcha-container,' +
             '#google-recaptcha-domainchecker,' +
             '#default-captcha-domainchecker'
@@ -675,6 +702,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             '.recaptcha-container,' +
             '.domainchecker-homepage-captcha,' +
             '.domain-search-captcha,' +
+            '.panel-form,' +
             '.row.justify-content-center,' +
             '.text-center.row,' +
             '.form-group'
@@ -728,6 +756,10 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             return $target;
         }
 
+        if ($target.closest('#containerExistingUserSignin').length) {
+            return $target.closest('#containerExistingUserSignin');
+        }
+
         if ($target.closest('form').length) {
             return $target.closest('form');
         }
@@ -737,6 +769,22 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
         }
 
         return $();
+    }
+
+    function checkoutLoginScope($target) {
+        var $scope = $target && $target.length ? $target.closest('#containerExistingUserSignin') : $();
+
+        if (!$scope.length) {
+            $scope = $('#containerExistingUserSignin');
+        }
+
+        return $scope;
+    }
+
+    function checkoutLoginIsAvailable($scope) {
+        return $scope.length
+            && $scope.is(':visible')
+            && firstVisible($scope.find('#btnExistingLogin')).length > 0;
     }
 
     function findLoginForm($target) {
@@ -800,6 +848,10 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
         return visibleItems($items).last();
     }
 
+    function trimValue(value) {
+        return String(value || '').replace(/^\s+|\s+$/g, '');
+    }
+
     function formTermsBlock($form) {
         var $scope = $form && $form.length ? $form : $(document);
         var $virtual = firstVisible($scope.find('.order-checkbox[data-form-input="#accepttos"], .order-checkbox:has([data-tos-checkbox])'));
@@ -813,6 +865,11 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
 
         if (!$input.length) {
             return $();
+        }
+
+        $block = $input.closest('.order-checkbox, .tospanel, .tos-panel, .terms-panel, .terms-of-service').first();
+        if ($block.length) {
+            return $block;
         }
 
         $label = $input.closest('label');
@@ -843,7 +900,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
 
     function actionBlock($target) {
         var $row = $target.closest('.row').first();
-        var $block = $target.closest('p, .text-center, .form-actions, .actions, .summary-actions, .form-group, .btn-group-wrap, .button-row').first();
+        var $block = $target.closest('p, div[align="center"], .text-center, .form-actions, .actions, .summary-actions, .panel-form-action, .form-group, .btn-group-wrap, .button-row, .message-action').first();
 
         if ($row.length && $row.find('input[type="text"], input[type="email"], input[type="password"], select, textarea').length) {
             return $row;
@@ -879,6 +936,9 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
         }
 
         $block = $submit.closest('p, .float-left, .text-center, .form-actions, .actions, .summary-actions, .form-group, .btn-group-wrap, .button-row').first();
+        if (!$block.length) {
+            $block = $submit.closest('div[align="center"], .panel-form-action, .message-action').first();
+        }
         return $block.length && !$block.is('form, #frmCheckout') ? $block : $submit;
     }
 
@@ -888,6 +948,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             '.sidebar-sticky-summary button.btn-checkout',
             '#orderSummary .summary-actions button.btn-checkout',
             '#checkout',
+            '#submit-checkout:not(.hidden)',
             '#orderSummary button[type="submit"]',
             '#orderSummary .btn-primary',
             '#orderSummary .btn-success',
@@ -951,13 +1012,20 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
     }
 
     function placeCheckoutLoginWidget($target, $widget) {
-        var $row = widgetRow($widget, 'checkout-login');
-        var $form = targetForm($target);
+        var $row;
+        var $scope = checkoutLoginScope($target);
         var $inlineForm = $target.closest('.inline-form').first();
         var $block = actionBlock($target);
         var $loginActions;
+        var $passwordBlock;
 
-        if (replaceNativeCaptchaBlock($form, $row)) {
+        if (!checkoutLoginIsAvailable($scope)) {
+            return false;
+        }
+
+        $row = widgetRow($widget, 'checkout-login');
+
+        if (replaceNativeCaptchaBlock($scope, $row)) {
             return true;
         }
 
@@ -966,9 +1034,15 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             return true;
         }
 
-        $loginActions = $form.find('#login, button[type="submit"], input[type="submit"]').last().closest('.float-left, .form-actions, p, .form-group').first();
+        $loginActions = firstVisible($scope.find('#btnExistingLogin, #login, button[type="submit"], input[type="submit"]')).closest('.float-left, .form-actions, p, .form-group, .text-center').first();
         if ($loginActions.length) {
             $loginActions.before($row);
+            return true;
+        }
+
+        $passwordBlock = $scope.find('#inputLoginPassword, input[name="loginpassword"], input[type="password"]').last().closest('.form-group, .mb-3, .row').first();
+        if ($passwordBlock.length) {
+            $passwordBlock.after($row);
             return true;
         }
 
@@ -1169,6 +1243,27 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
         $form.attr('data-peakrack-turnstile-form', '1');
     }
 
+    function ensureCheckoutLoginWidget() {
+        if (!hasPlacementPurpose('checkout-login')) {
+            return;
+        }
+
+        var $scope = checkoutLoginScope($('#btnExistingLogin'));
+        var $target = firstVisible($scope.find('#btnExistingLogin'));
+        var $widget = $scope.find('.peakrack-turnstile[data-peakrack-purpose="checkout-login"]').first();
+
+        if (!checkoutLoginIsAvailable($scope) || $widget.length) {
+            return;
+        }
+
+        $widget = $('.peakrack-turnstile[data-peakrack-purpose="checkout-login"]').first();
+        if (!$widget.length) {
+            $widget = createWidget('checkout-login');
+        }
+
+        placeCheckoutLoginWidget($target, $widget);
+    }
+
     function relocateCheckoutOrderWidget() {
         var $widget = $('.peakrack-turnstile[data-peakrack-purpose="checkout-order"]').first();
 
@@ -1199,11 +1294,17 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
                 bySelector(selector).each(function () {
                     var $target = $(this);
                     var $form = targetForm($target);
-                    var $scope = $form.length ? $form : $target.closest('#containerExistingUserSignin');
                     var purpose = placement.purpose || '';
+                    var $scope = purpose === 'checkout-login'
+                        ? checkoutLoginScope($target)
+                        : ($form.length ? $form : $target.closest('#containerExistingUserSignin'));
                     var hasExistingWidget = purpose
                         ? $('.peakrack-turnstile[data-peakrack-purpose="' + purpose + '"]').length
                         : $scope.find('.peakrack-turnstile').length;
+
+                    if (purpose === 'checkout-login' && !checkoutLoginIsAvailable($scope)) {
+                        return;
+                    }
 
                     if (!$scope.length || hasExistingWidget) {
                         return;
@@ -1224,6 +1325,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             });
         });
 
+        ensureCheckoutLoginWidget();
         ensureCheckoutOrderWidget();
         $('form').has('.peakrack-turnstile:not([data-peakrack-purpose="checkout-login"])').attr('data-peakrack-turnstile-form', '1');
     }
@@ -1301,7 +1403,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
 
     function tokenFrom($scope, fieldName) {
         var name = fieldName || 'cf-turnstile-response';
-        var value = $.trim($scope.find('[name="' + name + '"]').val() || '');
+        var value = trimValue($scope.find('[name="' + name + '"]').val() || '');
         return value;
     }
 
@@ -1311,7 +1413,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
 
         $form.find('.peakrack-turnstile').not('[data-peakrack-purpose="checkout-login"]').each(function () {
             hasScopedWidget = true;
-            token = $.trim(this.getAttribute('data-peakrack-token') || $(this).find('[name="cf-turnstile-response"]').val() || '');
+            token = trimValue(this.getAttribute('data-peakrack-token') || $(this).find('[name="cf-turnstile-response"]').val() || '');
             if (token) {
                 return false;
             }
@@ -1320,7 +1422,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
         if (!token && $form.is('#frmCheckout')) {
             $('.peakrack-turnstile[data-peakrack-purpose="checkout-order"]').each(function () {
                 hasScopedWidget = true;
-                token = $.trim(this.getAttribute('data-peakrack-token') || $(this).find('[name="cf-turnstile-response"]').val() || '');
+                token = trimValue(this.getAttribute('data-peakrack-token') || $(this).find('[name="cf-turnstile-response"]').val() || '');
                 if (token) {
                     return false;
                 }
@@ -1355,7 +1457,7 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
             $scope = $('#btnExistingLogin').parent();
         }
         var $widget = $scope.find('.peakrack-turnstile[data-peakrack-purpose="checkout-login"]').first();
-        return $.trim(($widget.length ? $widget.attr('data-peakrack-token') : '') || tokenFrom($scope, 'peakrack-turnstile-checkout-login-response'));
+        return trimValue(($widget.length ? $widget.attr('data-peakrack-token') : '') || tokenFrom($scope, 'peakrack-turnstile-checkout-login-response'));
     }
 
     function installCheckoutAjaxBridge() {
@@ -1406,12 +1508,52 @@ add_hook('ClientAreaFooterOutput', 1, function ($vars) {
         });
     }
 
+    function scheduleDomRefresh() {
+        if (domObserverTimer) {
+            window.clearTimeout(domObserverTimer);
+        }
+
+        domObserverTimer = window.setTimeout(function () {
+            domObserverTimer = null;
+            insertWidgets();
+            renderWidgets();
+        }, 150);
+    }
+
+    function installDomObserver() {
+        if (!window.MutationObserver || !document.body) {
+            return;
+        }
+
+        var observer = new window.MutationObserver(function (mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+                if (mutations[i].addedNodes && mutations[i].addedNodes.length) {
+                    scheduleDomRefresh();
+                    return;
+                }
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
     $(function () {
         insertWidgets();
         scheduleCheckoutOrderRelocation();
         renderWidgets();
         showCaptchaError();
         installCheckoutAjaxBridge();
+        installDomObserver();
+
+        $(document).off('click.peakrackTurnstileCheckoutLogin').on('click.peakrackTurnstileCheckoutLogin', '#btnAlreadyRegistered', function () {
+            window.setTimeout(function () {
+                insertWidgets();
+                renderWidgets();
+            }, 100);
+        });
 
         $(document).off('submit.peakrackTurnstile').on('submit.peakrackTurnstile', 'form[data-peakrack-turnstile-form="1"]', function (event) {
             if (!syncSubmitToken($(this))) {

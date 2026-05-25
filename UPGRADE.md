@@ -1,5 +1,24 @@
 # Upgrade Notes
 
+## 1.4.7
+
+- Improved Turnstile placement for login, registration, password reset, contact, ticket submission, cart, and checkout pages across Lagom, Nexus, Six, and Twenty-One themes.
+- Refined placement around terms-of-service and submit actions for Standard Cart, Nexus Cart, Lagom Cart, and Lagom Checkout layouts.
+- Added DOM mutation handling for cart and checkout forms that are rendered or updated by frontend scripts.
+- Removed reliance on deprecated jQuery trim helpers in token synchronization code.
+- Existing WHMCS installs do not need database changes for this release.
+- When updating manually, copy `peakrack_turnstile/` to `modules/addons/peakrack_turnstile/`.
+- Addon version bumped to `1.4.7`.
+
+## 1.4.6
+
+- Fixed checkout-page existing customer login when `/login/cart` is submitted through AJAX without a Turnstile token.
+- Returns a JSON error for checkout login captcha failures instead of redirecting to `login.php?error=captcha`, preventing WHMCS frontend `parsererror` responses.
+- Prevents hidden checkout login containers from placing their Turnstile widget in the complete-order area.
+- Existing WHMCS installs do not need database changes for this release.
+- When updating manually, copy `peakrack_turnstile/` to `modules/addons/peakrack_turnstile/`.
+- Addon version bumped to `1.4.6`.
+
 ## 1.4.5
 
 - Fixed the WHMCS addon title to `PeakRack Turnstile Manager`.
