@@ -26,7 +26,7 @@ English documentation: [README.md](README.md)
 
 ## 安装
 
-本仓库根目录采用适合 GitHub 浏览的浅层结构。真正需要上传到 WHMCS 的插件目录是：
+本仓库包含可直接部署到 WHMCS 的插件目录：
 
 ```text
 peakrack_turnstile/

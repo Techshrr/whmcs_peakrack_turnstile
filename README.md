@@ -27,7 +27,7 @@ Chinese documentation: [README.zh-CN.md](README.zh-CN.md)
 
 ## Installation
 
-The repository root is intentionally shallow for GitHub browsing. The deployable addon is the `peakrack_turnstile` directory:
+This repository includes the WHMCS addon directory that can be deployed directly:
 
 ```text
 peakrack_turnstile/
