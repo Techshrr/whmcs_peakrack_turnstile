@@ -1,126 +1,80 @@
-# WHMCS PeakRack Turnstile
+# PeakRack Turnstile Manager for WHMCS
 
-PeakRack Turnstile is a WHMCS addon module that replaces legacy captcha output with Cloudflare Turnstile.
+> Official repository: https://github.com/Techshrr/whmcs_peakrack_turnstile
+> License: MIT License
 
-Chinese documentation: [README.zh-CN.md](README.zh-CN.md)
+PeakRack Turnstile Manager is a WHMCS addon that adds Cloudflare Turnstile checks to selected client-area forms.
+
+## Overview
+
+The addon injects Turnstile widgets into selected WHMCS client-area forms and verifies submitted Turnstile tokens server-side through WHMCS hooks.
+
+It includes placement logic for WHMCS built-in templates and several common order form layouts. Custom selectors can be configured for heavily customized themes.
 
 ## Features
 
-- Supports WHMCS 9.x client-area pages: login, registration, password reset, contact, support ticket submission, and shopping cart checkout.
-- Prioritizes built-in WHMCS templates Nexus, Six, and Twenty-One, with compatibility handling for Lagom/Lagom2.
-- Covers Standard Cart, Nexus Cart, Lagom Cart/Lagom Checkout, and common WHMCS order form templates.
-- Admin page for Site Key, Secret Key, page toggles, widget theme, widget alignment, and custom selectors.
-- Cloudflare default visual widget width with selectable center or left alignment.
-- Handles checkout terms-of-service placement and keeps the widget near the intended submit action.
-- Handles dynamically rendered cart and checkout forms with DOM mutation monitoring.
-- Adds Turnstile tokens to checkout-page existing customer login requests sent to `/login/cart`.
-- Explicit Turnstile rendering for widgets inserted by WHMCS hooks.
-- Server-side token verification with per-request result caching.
-- Turnstile manager page includes a Chinese / English admin language switch.
+- Supports login, registration, password reset, contact, support ticket submission, and cart checkout pages.
+- Includes placement handling for WHMCS Nexus, Six, Twenty-One, Lagom/Lagom2, Standard Cart, Nexus Cart, and common order form templates.
+- Provides settings for Cloudflare Site Key, Secret Key, widget theme, widget alignment, page toggles, and custom selectors.
+- Adds Turnstile responses to checkout-page existing-customer login requests sent to `/login/cart`.
+- Uses explicit Turnstile rendering for widgets inserted by hooks.
+- Verifies submitted tokens server-side and caches per-request verification results.
+- Provides a Chinese and English admin language switch.
 
 ## Requirements
 
-- WHMCS 9.x
-- PHP 8.2 or PHP 8.3
+- WHMCS 9.0.x
+- PHP 8.2 or later
 - Cloudflare Turnstile Site Key and Secret Key
-- File deployment access to the WHMCS `modules/addons/` directory
 
 ## Installation
 
-This repository includes the WHMCS addon directory that can be deployed directly:
+1. Download the latest release from the official repository.
+2. Upload the addon directory to:
 
-```text
-peakrack_turnstile/
-```
+   `modules/addons/peakrack_turnstile/`
 
-Upload or copy it to this WHMCS path:
+3. Log in to the WHMCS admin area.
+4. Go to **System Settings > Addon Modules** and activate **PeakRack Turnstile Manager**.
+5. Grant access permissions to the relevant admin role group.
+6. Open **Addons > PeakRack Turnstile Manager** and configure the keys and page toggles.
 
-```text
-modules/addons/peakrack_turnstile/
-```
+## Configuration
 
-The final addon path should be:
+| Option | Description | Default |
+|---|---|---|
+| Site Key | Cloudflare Turnstile site key used by frontend widgets | Empty |
+| Secret Key | Cloudflare Turnstile secret key used for server verification | Empty |
+| Theme | Widget theme | auto |
+| Alignment | Widget alignment | center |
+| Enable login | Adds verification to the client login page | Disabled |
+| Enable register | Adds verification to the registration page | Disabled |
+| Enable password reset | Adds verification to password reset requests | Disabled |
+| Enable contact | Adds verification to the contact form | Disabled |
+| Enable ticket | Adds verification to new ticket submission | Disabled |
+| Enable cart | Adds verification to cart checkout | Disabled |
+| Custom selectors | Additional selectors for customized themes | Empty |
 
-```text
-modules/addons/peakrack_turnstile/hooks.php
-modules/addons/peakrack_turnstile/peakrack_turnstile.php
-```
+## Usage
 
-Then in WHMCS Admin:
+The administrator configures the Cloudflare keys, chooses widget theme and alignment, and enables the pages that require verification. Clients see a Turnstile widget on enabled forms. Submissions are rejected when the Turnstile token is missing or fails server-side verification.
 
-1. Go to **System Settings > Addon Modules**.
-2. Activate **PeakRack Turnstile Manager**.
-3. Grant access permissions to the relevant admin role group.
-4. Open **Addons > PeakRack Turnstile Manager**.
-5. Enter the Cloudflare Turnstile Site Key and Secret Key.
-6. Enable the pages that should require verification.
-7. Choose the frontend widget alignment. Center alignment is recommended for most themes; left alignment is available for templates with left-aligned action areas.
+Disable WHMCS built-in captcha if you do not want duplicate captcha widgets on the same forms.
 
-## Recommended WHMCS Setting
+## Upgrade
 
-Disable the built-in WHMCS captcha to avoid duplicate captcha widgets:
+See [UPGRADE.md](UPGRADE.md).
 
-```text
-System Settings > General Settings > Security > Captcha Form Protection
-```
+## Chinese Documentation
 
-Set the captcha type to **Always Off**.
+See [README.zh-CN.md](README.zh-CN.md).
 
-## Theme And Cart Compatibility
+## Security
 
-The default selectors cover:
+Do not commit production credentials, API keys, database passwords, payment secrets, WHMCS license data, customer data, identity documents, or private signing keys.
 
-- WHMCS built-in themes: Nexus, Six, Twenty-One
-- Lagom / Lagom2 client-area themes
-- Standard Cart
-- Nexus Cart
-- Lagom Cart / Lagom Checkout
-- Common legacy WHMCS order forms, including Legacy Boxes, Legacy Modern, Premium Comparison, Pure Comparison, Supreme Comparison, and Universal Slider
-
-For heavily customized themes, use **Advanced Settings: Custom Selectors** in the addon manager to target the desired form or submit action. Custom selectors should only be needed when the default placement logic cannot identify the local template structure.
-
-## Release Notes
-
-### 1.4.7
-
-- Improved Turnstile placement across Lagom, Nexus, Six, Twenty-One, Standard Cart, Nexus Cart, and Lagom checkout layouts.
-- Added DOM mutation handling for dynamically rendered cart and checkout forms.
-- Improved token synchronization and removed reliance on deprecated jQuery trim helpers.
-
-### 1.4.6
-
-- Fixed checkout-page existing customer login AJAX requests to include `cf-turnstile-response`.
-- Returns JSON for `/login/cart` captcha failures instead of redirecting to `login.php?error=captcha`.
-- Prevents hidden checkout login containers from placing a widget in the complete-order area.
-
-### 1.4.5
-
-- Fixed the WHMCS addon title to `PeakRack Turnstile Manager`.
-- Stabilized the top-right version badge and language switch so it no longer shifts with translated text length.
-
-### 1.4.4
-
-- Added a Chinese / English admin language switch to the Turnstile manager.
-- Localized the main manager UI text.
-
-### 1.4.1
-
-- Added a global frontend alignment option: center or left.
-- Kept the Cloudflare default visual widget width across supported templates.
-- Improved placement consistency across Nexus, Six, Twenty-One, and Lagom/Lagom2 pages.
-
-### 1.4.2
-
-- Renamed the local/repository package shape to `whmcs_peakrack_turnstile`.
-- Normalized the deployable files under `whmcs_peakrack_turnstile/modules` for consistent WHMCS plugin releases.
-
-### 1.4.3
-
-- Flattened the GitHub repository layout so `peakrack_turnstile/` is visible at the root.
-- Updated installation and upgrade documentation for the direct addon-folder layout.
-
-Detailed upgrade notes: [UPGRADE.md](UPGRADE.md).
+To report a security issue, see [SECURITY.md](SECURITY.md).
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

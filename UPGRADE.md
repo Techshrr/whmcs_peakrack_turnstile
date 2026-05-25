@@ -1,54 +1,50 @@
-# Upgrade Notes
+# Upgrade Guide
 
-## 1.4.7
+This guide explains how to upgrade this module from an older version.
 
-- Improved Turnstile placement for login, registration, password reset, contact, ticket submission, cart, and checkout pages across Lagom, Nexus, Six, and Twenty-One themes.
-- Refined placement around terms-of-service and submit actions for Standard Cart, Nexus Cart, Lagom Cart, and Lagom Checkout layouts.
-- Added DOM mutation handling for cart and checkout forms that are rendered or updated by frontend scripts.
-- Removed reliance on deprecated jQuery trim helpers in token synchronization code.
-- Existing WHMCS installs do not need database changes for this release.
-- When updating manually, copy `peakrack_turnstile/` to `modules/addons/peakrack_turnstile/`.
-- Addon version bumped to `1.4.7`.
+## Before upgrading
 
-## 1.4.6
+1. Back up the WHMCS files.
+2. Back up the WHMCS database.
+3. Make a copy of `modules/addons/peakrack_turnstile/`.
+4. Review [CHANGELOG.md](CHANGELOG.md).
+5. Check whether the upgrade includes configuration changes.
 
-- Fixed checkout-page existing customer login when `/login/cart` is submitted through AJAX without a Turnstile token.
-- Returns a JSON error for checkout login captcha failures instead of redirecting to `login.php?error=captcha`, preventing WHMCS frontend `parsererror` responses.
-- Prevents hidden checkout login containers from placing their Turnstile widget in the complete-order area.
-- Existing WHMCS installs do not need database changes for this release.
-- When updating manually, copy `peakrack_turnstile/` to `modules/addons/peakrack_turnstile/`.
-- Addon version bumped to `1.4.6`.
+## Upgrade steps
 
-## 1.4.5
+1. Download the latest release from the official repository:
 
-- Fixed the WHMCS addon title to `PeakRack Turnstile Manager`.
-- Stabilized the top-right version badge and language switch layout.
-- Existing WHMCS installs do not need database changes for this release.
-- When updating manually, copy `peakrack_turnstile/` to `modules/addons/peakrack_turnstile/`.
-- Addon version bumped to `1.4.5`.
+   https://github.com/Techshrr/whmcs_peakrack_turnstile
 
-## 1.4.4
+2. Replace the addon files in:
 
-- Added a top-right Chinese / English admin language switch to the Turnstile manager page.
-- Localized the main Turnstile manager UI labels, notices, table headings, and save message.
-- Addon version bumped to `1.4.4`.
+   `modules/addons/peakrack_turnstile/`
 
-## 1.4.3
+3. Keep the existing Cloudflare Site Key and Secret Key in WHMCS addon settings.
+4. Log in to the WHMCS admin area.
+5. Open **Addons > PeakRack Turnstile Manager** and verify all options.
+6. Clear the WHMCS template cache if client-area output does not update.
 
-- Repository layout only: the deployable addon now lives at repository root as `peakrack_turnstile/`.
-- Existing WHMCS installs do not need database changes for this release.
-- When updating manually, copy `peakrack_turnstile/` to `modules/addons/peakrack_turnstile/`.
-- Addon version bumped to `1.4.3`.
+## Database migrations
 
-## 1.4.2
+This version does not require manual database migration.
 
-- Repository layout only: deployable files now live under `whmcs_peakrack_turnstile/modules`.
-- Existing WHMCS installs do not need database changes for this release.
-- When updating manually, copy the new `whmcs_peakrack_turnstile/modules` directory contents over your WHMCS root.
-- Addon version bumped to `1.4.2`.
+## Version-specific notes
 
-## 1.4.1
+### Upgrade from 1.4.x to 1.4.7
 
-- Added a global frontend alignment option: center or left.
-- Kept the Cloudflare default visual widget width across supported templates.
-- Improved placement consistency across Nexus, Six, Twenty-One, and Lagom/Lagom2 pages.
+- No breaking changes.
+- Existing keys, page toggles, theme, alignment, and custom selectors are preserved.
+
+## Rollback
+
+To roll back:
+
+1. Restore the previous `modules/addons/peakrack_turnstile/` directory.
+2. Restore the database backup if WHMCS settings were changed.
+3. Clear the WHMCS template cache.
+4. Check the WHMCS activity log for errors.
+
+## Notes
+
+Do not overwrite production credentials, local configuration files, custom templates, callback secrets, or payment credentials unless the upgrade notes explicitly require it.

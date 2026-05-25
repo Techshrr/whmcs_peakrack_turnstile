@@ -1,4 +1,15 @@
 <?php
+// SPDX-License-Identifier: MIT
+
+/**
+ * PeakRack Turnstile Manager for WHMCS
+ *
+ * Official repository:
+ * https://github.com/Techshrr/whmcs_peakrack_turnstile
+ *
+ * Copyright (c) 2026 PeakRack.
+ * Licensed under the MIT License.
+ */
 
 use WHMCS\Database\Capsule;
 

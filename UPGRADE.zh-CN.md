@@ -1,54 +1,50 @@
 # 升级说明
 
-## 1.4.7
+本文档用于说明如何从旧版本升级本模块。
 
-- 增强 Lagom、Nexus、Six、Twenty-One 主题下登录、注册、密码重置、联系我们、提交工单、购物车/结账页面的 Turnstile 插入位置。
-- 优化 Standard Cart、Nexus Cart、Lagom 购物车和 Lagom 结账页的服务条款及提交按钮附近布局。
-- 增加动态 DOM 监听，兼容由前端脚本延迟生成的购物车/结账表单。
-- 优化 token 读取逻辑，避免未来 jQuery 版本变化导致前端 token 同步失败。
-- 已安装站点升级到此版本不需要修改数据库。
-- 手动更新时，把 `peakrack_turnstile/` 覆盖上传到 `modules/addons/peakrack_turnstile/`。
-- 插件版本号升级到 `1.4.7`。
+## 升级前准备
 
-## 1.4.6
+1. 备份 WHMCS 文件。
+2. 备份 WHMCS 数据库。
+3. 复制一份 `modules/addons/peakrack_turnstile/`。
+4. 升级前阅读 [CHANGELOG.md](CHANGELOG.md)。
+5. 确认本次升级是否包含配置变更。
 
-- 修复结账页“现有客户登录”AJAX 请求 `/login/cart` 未携带 `cf-turnstile-response` 的问题。
-- 结账登录验证码验证失败时返回 JSON 响应，避免 WHMCS 前端收到 `login.php?error=captcha` 重定向后触发 `parsererror`。
-- 隐藏的结账登录区域不会再把 Turnstile 错误插入到完成订单区域。
-- 已安装站点升级到此版本不需要修改数据库。
-- 手动更新时，把 `peakrack_turnstile/` 覆盖上传到 `modules/addons/peakrack_turnstile/`。
-- 插件版本号升级到 `1.4.6`。
+## 升级步骤
 
-## 1.4.5
+1. 从官方仓库下载最新版本：
 
-- 将 WHMCS 插件标题固定为 `PeakRack Turnstile Manager`。
-- 固定右上角版本号和语言切换区域布局，避免随说明文字行数变化。
-- 已安装站点升级到此版本不需要修改数据库。
-- 手动更新时，把 `peakrack_turnstile/` 覆盖上传到 `modules/addons/peakrack_turnstile/`。
-- 插件版本号升级到 `1.4.5`。
+   https://github.com/Techshrr/whmcs_peakrack_turnstile
 
-## 1.4.4
+2. 将插件文件替换到：
 
-- 在 Turnstile 管理器页面右上角增加 `中文 / English` 后台语言切换按钮。
-- 管理器主要配置文字、提示、表格标题和保存提示支持中英文切换。
-- 插件版本号升级到 `1.4.4`。
+   `modules/addons/peakrack_turnstile/`
 
-## 1.4.3
+3. 保留 WHMCS 插件设置中已有的 Cloudflare Site Key 和 Secret Key。
+4. 登录 WHMCS 后台。
+5. 打开 **Addons > PeakRack Turnstile Manager**，检查所有配置项。
+6. 如果客户区显示没有更新，请清理 WHMCS 模板缓存。
 
-- 仅调整仓库展示结构：可部署插件目录现在位于仓库根目录 `peakrack_turnstile/`。
-- 已安装站点升级到此版本不需要修改数据库。
-- 手动更新时，把 `peakrack_turnstile/` 覆盖上传到 `modules/addons/peakrack_turnstile/`。
-- 插件版本号升级到 `1.4.3`。
+## 数据库迁移
 
-## 1.4.2
+本版本不需要手动执行数据库迁移。
 
-- 仅调整仓库发布目录结构：可部署文件现在位于 `whmcs_peakrack_turnstile/modules`。
-- 已安装站点升级到此版本不需要修改数据库。
-- 手动更新时，把新的 `whmcs_peakrack_turnstile/modules` 目录内容覆盖上传到 WHMCS 根目录即可。
-- 插件版本号升级到 `1.4.2`。
+## 版本升级说明
 
-## 1.4.1
+### 从 1.4.x 升级到 1.4.7
 
-- 新增全局前台对齐方式：居中或左对齐。
-- 保持 Cloudflare 默认视觉宽度，减少不同模板里的横向拉伸。
-- 优化 Nexus、Six、Twenty-One、Lagom/Lagom2 多页面显示位置一致性。
+- 无破坏性变更。
+- 原有密钥、页面开关、主题、对齐方式和自定义选择器会保留。
+
+## 回滚方法
+
+如需回滚：
+
+1. 恢复旧版本 `modules/addons/peakrack_turnstile/` 目录。
+2. 如果 WHMCS 设置被修改，恢复数据库备份。
+3. 清理 WHMCS 模板缓存。
+4. 检查 WHMCS 活动日志是否有错误。
+
+## 注意事项
+
+不要覆盖生产环境密钥、本地配置文件、自定义模板、回调密钥或支付凭据，除非升级说明明确要求。
